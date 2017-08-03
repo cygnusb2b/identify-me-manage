@@ -5,8 +5,8 @@
 /tmp
 
 # dependencies
-/node_modules
-/bower_components
+node_modules
+bower_components
 
 # misc
 /.sass-cache
@@ -16,3 +16,4 @@
 npm-debug.log*
 testem.log
 .DS_Store
+
