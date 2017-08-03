@@ -1,0 +1,16 @@
+{{#if show}}
+  {{#ember-wormhole to="wormhole"}}
+    {{#-bs/modal/-wrapper
+      fade=fade
+      backdrop=backdrop
+      keyboard=keyboard
+      focus=focus
+      show=show
+      size=size
+      onHide=onHide
+      onHidden=onHidden
+    as |wrapper|}}
+      {{yield wrapper}}
+    {{/-bs/modal/-wrapper}}
+  {{/ember-wormhole}}
+{{/if}}

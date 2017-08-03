@@ -1,0 +1,32 @@
+{{#-bs/row class="justify-content-center"}}
+  {{#-bs/col sm=10 md=8 lg=6}}
+    <div class="card">
+      <div class="card-header">
+        Setup New Account
+      </div>
+      <div class="card-block">
+        {{#if session.currentUser.emailVerified}}
+          {{#if hasCompletedStep2}}
+            {{setup-wizard/create-account
+              stepNumber=3
+              totalSteps=3
+              on-wizard-complete=on-wizard-complete
+            }}
+          {{else}}
+            {{setup-wizard/create-profile
+              stepNumber=2
+              totalSteps=3
+              completed=hasCompletedStep2
+            }}
+          {{/if}}
+        {{else}}
+          {{setup-wizard/confirm-email
+            stepNumber=1
+            totalSteps=3
+            currentUser=session.currentUser
+          }}
+        {{/if}}
+      </div>
+    </div>
+  {{/-bs/col}}
+{{/-bs/row}}

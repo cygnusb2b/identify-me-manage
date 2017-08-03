@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "identify-me-development",
+    "production": "identify-me-production"
+  }
+}

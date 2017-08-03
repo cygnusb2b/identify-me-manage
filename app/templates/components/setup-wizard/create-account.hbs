@@ -1,0 +1,26 @@
+{{setup-wizard/step current=stepNumber total=totalSteps title="Create your first organization."}}
+<div class="form-group">
+  <label for="setup.org.name">Organization Name</label>
+  {{input id="setup.org.name" class="form-control" type="text" value=account.name disabled=isLoading}}
+  <small id="setup.org.name.help" class="form-text text-muted">An organization could be a company, a division, or any logical means by which you'd like to seperate your data.</small>  
+</div>
+{{#-bs/button "primary" click=(action "save") disabled=(eq isLoading true)}}
+  Finish
+{{/-bs/button}}
+
+{{#if isLoading}}
+  <div class="mt-3">
+    <small class="text-muted">Creating account...</small>
+    {{#-bs/progress}}
+      {{-bs/progress/bar value=100 animated=true}}
+    {{/-bs/progress}}
+  </div>
+{{/if}}
+
+{{#if error}}
+  <div class="alert-danger alert mt-3 mb-0" role="alert"><strong>Oops!</strong> {{error.message}}</div>
+{{/if}}
+
+{{#if allDone}}
+  <h1>Yay!</h1>
+{{/if}}

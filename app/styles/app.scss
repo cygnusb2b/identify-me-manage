@@ -1,0 +1,15 @@
+@import "bower_components/bootswatch/pulse/variables";
+@import "bower_components/bootstrap/scss/bootstrap";
+@import "bower_components/bootswatch/pulse/bootswatch";
+
+/* sandstone is also a pretty cool theme, and try darkly if you want the blackness! */
+
+body {
+    margin-top: 90px;
+    margin-bottom: 50px;
+}
+
+a[data-ember-action]:not(:disabled),
+.clickable {
+    cursor: pointer;
+}

@@ -1,0 +1,42 @@
+{
+  "rules": {
+    "readable": {
+      ".read": "auth != null"
+    },
+    // @todo Each type should be defined here, not globally set
+    //       This ensures that random data cannot be written here.
+    "writeable": {
+    	".write": "auth != null"
+    },
+    "owner-readable": {
+      "$type": {
+        "$uid": {
+          ".read": "auth.uid === $uid"
+        }
+      }
+    },
+    // @todo Each type should be defined here, not wildcarded with $type
+    //       This ensures that random data cannot be written here.
+    "owner-writeable": {
+      "$type": {
+        "$uid": {
+          ".write": "auth.uid === $uid"
+        }
+      }
+    },
+    "org-readable": {
+      "$oid": {
+        "$type": {
+          ".read": "auth.email_verified == true && root.child('owner-readable/user-organizations/'+auth.uid+'/organizations/'+$oid).exists()"
+        }
+      }
+    },
+    "org-readable-owner": {
+      "$oid": {
+        "$type": {
+          ".read": "auth.email_verified == true && root.child('owner-readable/user-organizations/'+auth.uid+'/organizations/'+$oid+'/role').val() === 'owner'"
+        }
+      }
+    }
+  }
+}

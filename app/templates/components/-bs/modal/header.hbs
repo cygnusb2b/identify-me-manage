@@ -1,0 +1,13 @@
+{{#if hasBlock}}
+  {{ yield (hash
+    title=(component titleComponent)
+    closeIcon=(component closeComponent on-close=(action closeAction))
+  )}}
+{{else}}
+  {{#if title}}
+    {{#component titleComponent}}{{ title }}{{/component}}
+  {{/if}}
+  {{#if showClose}}
+    {{component closeComponent on-close=(action closeAction)}}
+  {{/if}}
+{{/if}}

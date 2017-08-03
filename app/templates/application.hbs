@@ -1,0 +1,37 @@
+{{!-- <div class="loading-overlay"><div class="spin">{{-ion "radio-waves"}}</div></div> --}}
+
+{{!-- {{ember-notify messageStyle='bootstrap'}} --}}
+
+{{#-bs/navbar inverse=true class='bg-primary' toggleable='md' fixed='top'}}
+
+  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#primary-nav">
+    {{-ion 'navicon-round'}}
+  </button>
+
+  {{#link-to 'app' class='navbar-brand'}}Identify Me{{/link-to}}
+  {{!-- Should only appear once logged in. --}}
+
+  {{!-- <div class="collapse navbar-collapse" id="primary-nav">
+    <ul class="navbar-nav mr-auto mt-2 mt-md-0">
+      <li class="nav-item">
+        {{#link-to "integration-service" class="nav-link"}}Services{{/link-to}}
+      </li>
+      <li class="nav-item dropdown">
+       {{#-bs/nav/link-dropdown "campaign" id="nav-campaign-items"}}Campaigns{{/-bs/nav/link-dropdown}}
+        <div class="dropdown-menu" aria-labelledby="nav-campaign-items">
+          {{#link-to "campaign.email-signup" class="dropdown-item"}}Email Signup{{/link-to}}
+          {{#link-to "campaign.gated-content" class="dropdown-item"}}Gated Content{{/link-to}}
+        </div>
+      </li>
+    </ul>
+  </div> --}}
+{{/-bs/navbar}}
+
+
+{{#-bs/container fluid=true}}
+  {{#-bs/row gutters=true}}
+    {{#-bs/col xl=12}}
+      {{outlet}}
+    {{/-bs/col}}
+  {{/-bs/row}}
+{{/-bs/container}}

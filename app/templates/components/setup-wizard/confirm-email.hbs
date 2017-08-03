@@ -1,0 +1,27 @@
+{{setup-wizard/step current=stepNumber total=totalSteps title="Verify your email address."}}
+<p class="card-text">
+  A confirmation was sent to {{currentUser.email}}.
+  To continue your account setup, please click the confirmation link found within the email.
+</p>
+<p class="card-text">Make sure to check your <strong>spam and/or clutter</strong> folders.</p>
+<p class="card-text">If you still haven't receieved the confirmation email, you can resend it below.</p>
+{{#-bs/button "primary" click=(action "resendConfirmation") disabled=(eq isLoading true)}}
+  Resend Confirmation Email
+{{/-bs/button}}
+
+{{#if isLoading}}
+  <div class="mt-3">
+    <small class="text-muted">Resending confirmation email...</small>
+    {{#-bs/progress}}
+      {{-bs/progress/bar value=100 animated=true}}
+    {{/-bs/progress}}
+  </div>
+{{/if}}
+
+{{#if complete}}
+  <div class="alert-success alert mt-3 mb-0" role="alert">Email confirmation successfully sent!</div>
+{{/if}}
+
+{{#if error}}
+  <div class="alert-danger alert mt-3 mb-0" role="alert"><strong>Oops!</strong> {{error.message}}</div>
+{{/if}}

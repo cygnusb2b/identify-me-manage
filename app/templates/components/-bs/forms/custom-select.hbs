@@ -1,0 +1,7 @@
+{{#if hasBlock}}
+  {{ yield }}
+{{else}}
+  {{#each options as |option|}}
+    {{-bs/forms/select-option value=(get option valuePath) label=(get option labelPath) selectValue=value disabled=option.disabled}}
+  {{/each}}
+{{/if}}

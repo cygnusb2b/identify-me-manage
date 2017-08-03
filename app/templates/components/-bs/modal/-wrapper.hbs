@@ -1,0 +1,10 @@
+{{#-bs/modal/dialog size=size}}
+  <div class="modal-content">
+    {{yield (hash
+      header=(component '-bs/modal/header' closeAction=(action 'hide'))
+      body=(component '-bs/modal/body')
+      footer=(component '-bs/modal/footer')
+      hide=(action 'hide')
+    )}}
+  </div>
+{{/-bs/modal/dialog}}

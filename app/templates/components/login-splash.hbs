@@ -1,0 +1,24 @@
+{{#-bs/row class="justify-content-center"}}
+  {{#-bs/col sm=10 md=8 lg=6}}
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-pills card-header-pills" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" href="#login" role="tab">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" href="#signup" role="tab">Signup</a>
+          </li>
+        </ul>
+      </div>
+      <div class="tab-content card-block">
+        <div id="login" class="tab-pane active" role="tabpanel">
+          {{log-in session=session onComplete=onLoginComplete}}
+        </div>
+        <div id="signup" class="tab-pane" role="tabpanel">
+          {{sign-up onComplete=onSignupComplete}}
+        </div>
+      </div>
+    </div>
+  {{/-bs/col}}
+{{/-bs/row}}

@@ -1,0 +1,16 @@
+{
+  "name": "manage",
+  "description": "Small description for manage goes here",
+  "main": "",
+  "authors": [
+    "Jacob Bare <jacob@limit0.io>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "v4.0.0-alpha.6",
+    "bootswatch": "https://github.com/thomaspark/bootswatch.git#v4",
+    "Ionicons": "ionicons#^2.0.1"
+  }
+}
