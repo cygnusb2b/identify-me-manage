@@ -1,0 +1,14 @@
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)" role="button">
+      <img src={{userManager.currentUser.photoURL}} class="avatar mr-1" height="20" width="20">
+      {{userManager.currentUser.firstName}} {{userManager.currentUser.lastName}}
+      </a>
+
+    <div class="dropdown-menu dropdown-menu-right">
+      <a href='#' class='dropdown-item' title='Settings'>Settings</a>
+      <div class="dropdown-divider"></div>
+      <a href='#' class='dropdown-item' title='Logout' {{action 'logout'}}>
+        {{-ion 'log-out'}} Logout
+      </a>
+    </div>
+  </li>
