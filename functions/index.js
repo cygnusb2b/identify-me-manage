@@ -129,6 +129,21 @@ exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('or
 });
 
 /**
+ * Owner Writeable, Active Org Queue
+ */
+exports.ownerWriteableActiveOrgCreate = functions.database.ref(getOwnerWriteableQueuePath('active-org')).onCreate((event) => {
+  const uid = event.params.uid;
+  const oid = event.data.val();
+
+  const path = `owner-readable/user-organizations/${uid}/activeOrgId`;
+  return Promise.resolve()
+    .then(() => admin.database().ref(path).set(oid))
+    .then(() => event.data.ref.remove())
+    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
  * Owner Readable, User Org Create
  */
 exports.ownerReadableUserOrgCreate = functions.database.ref('owner-readable/user-organizations/{uid}/organizations/{oid}').onCreate((event) => {
