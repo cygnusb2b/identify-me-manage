@@ -10,6 +10,7 @@ Router.map(function() {
   this.route('app', { path: '/' }, function() {
     this.route('welcome');
     this.route('setup');
+    this.route('settings');
     this.route('organization', { path: '/organization/:id' }, function() {
       this.route('settings', { path: '/settings' }, function() {
         this.route('team');
