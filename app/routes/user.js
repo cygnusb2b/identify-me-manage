@@ -6,7 +6,7 @@ export default Route.extend({
   model(params) {
     const { mode, oobCode } = params;
     return this.get('userManager').processAction(mode, oobCode)
-      .then(() => this.transitionTo('manage'))
+      .then(() => this.transitionTo('app'))
     ;
   },
 });
