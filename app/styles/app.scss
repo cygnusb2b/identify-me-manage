@@ -13,3 +13,11 @@ a[data-ember-action]:not(:disabled),
 .clickable {
     cursor: pointer;
 }
+
+.avatar {
+    display: inline-block;
+    overflow: hidden;
+    line-height: 1;
+    vertical-align: middle;
+    border-radius: 3px;
+}

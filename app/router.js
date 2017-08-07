@@ -11,14 +11,20 @@ Router.map(function() {
     this.route('welcome');
     this.route('setup');
     this.route('organization', { path: '/organization/:id' }, function() {
+      this.route('settings', { path: '/settings' }, function() {
+        this.route('team');
+      });
+      this.route('integration-service');
+      this.route('campaign', { path: '/campaign' }, function() {
+        this.route('email-signup');
+        this.route('gated-content');
+      })
       this.route('taxonomy');
     });
   }),
-  this.route('user', { path: '/__/auth/action' });
 
-  this.route('app', function() {
-    this.route('organization');
-  });
+  // Unauthenticated
+  this.route('user', { path: '/__/auth/action' });
 });
 
 export default Router;

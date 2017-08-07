@@ -115,6 +115,7 @@ exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('or
   const payload = event.data.val();
   const org = {
     name: payload.name || null,
+    photoURL: `https://robohash.org/${oid}?set=set3&bgset=bg2`,
     createdAt: now,
     updatedAt: now,
   };
@@ -124,6 +125,7 @@ exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('or
       const path = `owner-readable/user-organizations/${uid}/organizations/${oid}`;
       return admin.database().ref(path).set({
         name: org.name,
+        photoURL: org.photoURL,
         role: 'Owner',
       });
     })

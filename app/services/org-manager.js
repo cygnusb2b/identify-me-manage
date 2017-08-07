@@ -28,6 +28,11 @@ export default Service.extend({
     return (activeOrg) ? activeOrg : defaultOrg;
   }),
 
+  canManageOrg: computed('activeOrg.role', function() {
+    const role = this.get('activeOrg.role');
+    return role === 'Owner';
+  }),
+
   createNewOrg({ name }) {
     const uid = this.get('userManager.uid');
     const validate = () => {
@@ -40,15 +45,18 @@ export default Service.extend({
       }
     }
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
+    let newId = null;
     return Promise.resolve()
       .then(() => validate())
       .then(() => writeTo('push', 'org-create', uid, { name }))
       .then((snap) => {
-        const oid = snap.key;
-        const path = `owner-readable/user-organizations/${uid}/organizations/${oid}`;
+        newId = snap.key;
+        const path = `owner-readable/user-organizations/${uid}/organizations/${newId}`;
         return this.get('fb').waitUntilExists(path);
       })
       .then(() => this.setUserOrgsFor(uid))
+      .then(() => this.setActiveOrgTo(newId))
+      .then(() => newId)
     ;
   },
 
