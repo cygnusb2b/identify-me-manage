@@ -8,23 +8,39 @@
     {{-ion 'navicon-round'}}
   </button>
 
-  {{#link-to 'app' class='navbar-brand'}}Identify Me{{/link-to}}
+  <a href="/" class="navbar-brand">Identify Me</a>
   {{!-- Should only appear once logged in. --}}
 
-  {{!-- <div class="collapse navbar-collapse" id="primary-nav">
-    <ul class="navbar-nav mr-auto mt-2 mt-md-0">
-      <li class="nav-item">
-        {{#link-to "integration-service" class="nav-link"}}Services{{/link-to}}
+  {{#if userManager.canUseApp}}
+
+    <div class="collapse navbar-collapse" id="primary-nav"> 
+      <ul class="navbar-nav mr-auto mt-2 mt-md-0">
+        <li class="nav-item">
+          {{#link-to "app.organization.index" orgManager.activeOrgId class="nav-link"}}
+            {{!-- {{-ion "pie-graph"}} --}}
+             Dashboard
+          {{/link-to}}
       </li>
-      <li class="nav-item dropdown">
-       {{#-bs/nav/link-dropdown "campaign" id="nav-campaign-items"}}Campaigns{{/-bs/nav/link-dropdown}}
-        <div class="dropdown-menu" aria-labelledby="nav-campaign-items">
-          {{#link-to "campaign.email-signup" class="dropdown-item"}}Email Signup{{/link-to}}
-          {{#link-to "campaign.gated-content" class="dropdown-item"}}Gated Content{{/link-to}}
-        </div>
-      </li>
-    </ul>
-  </div> --}}
+
+
+        <li class="nav-item">
+          {{#link-to "app.organization.integration-service" orgManager.activeOrgId class="nav-link"}}Services{{/link-to}}
+        </li>
+        <li class="nav-item dropdown">
+        {{#-bs/nav/link-dropdown "app.organization.campaign" orgManager.activeOrgId id="nav-campaign-items"}}Campaigns{{/-bs/nav/link-dropdown}}
+          <div class="dropdown-menu" aria-labelledby="nav-campaign-items">
+            {{#link-to "app.organization.campaign.email-signup" orgManager.activeOrgId class="dropdown-item"}}Email Signup{{/link-to}}
+            {{#link-to "app.organization.campaign.gated-content" orgManager.activeOrgId class="dropdown-item"}}Gated Content{{/link-to}}
+          </div>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav float-lg-right">
+        {{org-nav}}
+        {{user-nav}}
+      </ul>
+  </div> 
+  {{/if}}
 {{/-bs/navbar}}
 
 
