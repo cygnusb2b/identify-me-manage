@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 admin.initializeApp(functions.config().firebase);
 
 function getNowTimestamp() {
@@ -20,11 +21,14 @@ function getOwnerWriteableQueuePath(name) {
 exports.createUser = functions.auth.user().onCreate((event) => {
   const data = event.data;
   const now = getNowTimestamp();
+
+ const hash = crypto.createHash('md5').update(data.email.toLowerCase()).digest('hex');
+
   const user = {
     email: data.email,
     displayName: data.displayName || null,
     verificationSent: false,
-    photoURL: data.photoURL || null,
+    photoURL: data.photoURL || `https://www.gravatar.com/avatar/${hash}`,
     createdAt: now,
     updatedAt: now,
   };
