@@ -15,8 +15,17 @@ export default Service.extend({
   hasOrgs: computed('availableOrgs.length', function() {
     return this.get('availableOrgs.length') ? true : false;
   }),
-  activeOrg: computed('availableOrgs.firstObject', 'userOrgs.activeOrg', function() {
-    return this.get('availableOrgs.firstObject');
+  activeOrgId: computed('userOrgs.activeOrgId', function() {
+    return this.get('userOrgs.activeOrgId');
+  }),
+  activeOrg: computed('availableOrgs.firstObject', 'activeOrgId', function() {
+    const defaultOrg = this.get('availableOrgs.firstObject');
+    const activeOrgId = this.get('activeOrgId');
+    if (!activeOrgId) {
+      return defaultOrg;
+    }
+    const activeOrg = this.get('availableOrgs').findBy('id', activeOrgId);
+    return (activeOrg) ? activeOrg : defaultOrg;
   }),
 
   createNewOrg({ name }) {
@@ -52,6 +61,14 @@ export default Service.extend({
         throw error;
       }
     })
+  },
+
+  setActiveOrgTo(oid) {
+    const uid = this.get('userManager.uid');
+    const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
+    return Promise.resolve()
+      .then(() => writeTo('set', 'active-org', uid, oid))
+    ;
   },
 
   setUserOrgsFor(uid) {
