@@ -4,7 +4,7 @@ const { Component, computed } = Ember;
 
 const ButtonComponent = Component.extend({
   tagName: 'button',
-  classNames: ['btn'],
+  classNames: ['btn clickable'],
   classNameBindings: ['_typeClass', 'role', '_sizeClass', '_blockClass', '_disabledClass'],
   attributeBindings: ['disabled', 'disabled:aria-disabled', 'type'],
   role: 'button',
