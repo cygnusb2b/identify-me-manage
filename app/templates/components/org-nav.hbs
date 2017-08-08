@@ -1,6 +1,6 @@
   <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)" role="button">
-      <img src={{orgManager.activeOrg.photoURL}} class="avatar mr-1" height="20" width="20">
+      <img src={{orgManager.activeOrg.photoURL}} class="icon icon-sm mr-1">
       {{orgManager.activeOrg.name}}
       </a>
 
@@ -20,7 +20,7 @@
       
       {{#each orgManager.availableOrgs as |org|}}
          {{#link-to 'app.organization.index' org.id class='dropdown-item'}} 
-          <img src={{org.photoURL}} class="avatar mr-1" height="20" width="20">
+          <img src={{org.photoURL}} class="icon icon-sm mr-1">
           {{org.name}}
          {{/link-to}} 
       {{/each}}

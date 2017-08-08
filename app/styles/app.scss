@@ -14,10 +14,20 @@ a[data-ember-action]:not(:disabled),
     cursor: pointer;
 }
 
-.avatar {
+.icon {
     display: inline-block;
     overflow: hidden;
     line-height: 1;
     vertical-align: middle;
     border-radius: 3px;
+}
+
+.icon-lg {
+    width: 100px;
+    height: 100px;
+}
+
+.icon-sm {
+    width: 20px;
+    height: 20px;
 }
