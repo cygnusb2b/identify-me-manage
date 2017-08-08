@@ -34,10 +34,10 @@ path /org-readable-owner/{oid} {
     read() { isOrgOwner(oid) }
 }
 
-path /org-writeable/{oid} {
-    write() { isOrgMember(oid) }
+path /org-writeable/{type}/{uid}/{oid} {
+    write() { auth.uid === uid && isOrgMember(oid) }
 }
 
-path /org-writeable-owner/{oid} {
-    write() { isOrgOwner(oid) }
+path /org-writeable-owner/{type}/{uid}/{oid} {
+    write() { auth.uid === uid && isOrgOwner(oid) }
 }
