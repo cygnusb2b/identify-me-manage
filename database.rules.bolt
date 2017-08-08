@@ -1,0 +1,43 @@
+isOrgMember(oid) { auth.email_verified === true && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid]) != null }
+isOrgOwner(oid) { auth.email_verified === true && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid].role) === "Owner" }
+
+path / {
+  read() { false }
+  write() { false }
+}
+
+path /readable {
+  read() { auth !== null }
+}
+
+// @todo Each type should be defined here, not wildcarded with $type
+//       This ensures that random data cannot be written here.
+path /writeable {
+  write() { auth !== null }
+}
+
+path /owner-readable/{type}/{uid} {
+    read() { auth.uid === uid }
+}
+
+// @todo Each type should be defined here, not wildcarded with $type
+//       This ensures that random data cannot be written here.
+path /owner-writeable/{type}/{uid} {
+    write() { auth.uid === uid }
+}
+
+path /org-readable/{oid} {
+    read() { isOrgMember(oid) }
+}
+
+path /org-readable-owner/{oid} {
+    read() { isOrgOwner(oid) }
+}
+
+path /org-writeable/{oid} {
+    write() { isOrgMember(oid) }
+}
+
+path /org-writeable-owner/{oid} {
+    write() { isOrgOwner(oid) }
+}
