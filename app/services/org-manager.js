@@ -42,18 +42,14 @@ export default Service.extend({
       }
     }
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
-    let newId = null;
     return Promise.resolve()
       .then(() => validate())
       .then(() => writeTo('push', 'org-create', uid, { name }))
       .then((snap) => {
-        newId = snap.key;
-        const path = `owner-readable/user-organizations/${uid}/organizations/${newId}`;
-        return this.get('fb').waitUntilExists(path);
+        const oid = snap.key;
+        const path = `owner-readable/user-organizations/${uid}/organizations/${oid}`;
+        return this.get('fb').waitUntilExists(path).then(() => oid);
       })
-      .then(() => this.setUserOrgsFor(uid))
-      .then(() => this.setActiveOrgTo(newId))
-      .then(() => newId)
     ;
   },
 

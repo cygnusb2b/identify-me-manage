@@ -23,7 +23,7 @@ export default Component.extend({
       this.set('error', null);
 
       this.get('orgManager').createNewOrg(this.get('organization'))
-        .then((r) => this.sendAction('onComplete', r))
+        .then(oid => this.sendAction('onComplete', oid))
         .catch(error => this.set('error', error))
         .finally(() => this.set('isLoading', false))
       ;

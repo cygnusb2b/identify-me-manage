@@ -3,6 +3,6 @@ import attr from 'ember-data/attr';
 import { hasMany } from 'ember-data/relationships';
 
 export default Model.extend({
-  organizations: hasMany('owner-readable/user-organizations/organization', { async: false, inverse: null }),
+  organizations: hasMany('owner-readable/user-organizations/$uid/organizations', { async: false, inverse: null }),
   activeOrgId: attr('string'),
 });
