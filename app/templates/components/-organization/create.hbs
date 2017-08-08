@@ -1,12 +1,12 @@
-{{-form/organization/create organization=account}}
+{{-form/organization/create organization=organization}}
 
 {{#-bs/button "primary" click=(action "save") disabled=(eq isLoading true)}}
-  Finish
+  Create
 {{/-bs/button}}
 
 {{#if isLoading}}
   <div class="mt-3">
-    <small class="text-muted">Creating account...</small>
+    <small class="text-muted">Creating organization...</small>
     {{#-bs/progress}}
       {{-bs/progress/bar value=100 animated=true}}
     {{/-bs/progress}}

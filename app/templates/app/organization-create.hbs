@@ -1,0 +1,14 @@
+{{#-bs/row class="justify-content-center"}}
+  {{#-bs/col sm=10 md=8 lg=6}}
+    <div class="card">
+      <div class="card-header">
+        New Organization
+      </div>
+      <div class="tab-content card-block">
+        <div id="account" class="tab-pane active" role="tabpanel">
+          {{-organization/create onComplete=(route-action 'onComplete')}}
+        </div>
+      </div>
+    </div>
+  {{/-bs/col}}
+{{/-bs/row}}
