@@ -28,10 +28,7 @@ export default Service.extend({
     return (activeOrg) ? activeOrg : defaultOrg;
   }),
 
-  canManageOrg: computed('activeOrg.role', function() {
-    const role = this.get('activeOrg.role');
-    return role === 'Owner';
-  }),
+  canManageOrg: computed.equal('activeOrg.role', 'Owner'),
 
   createNewOrg({ name }) {
     const uid = this.get('userManager.uid');

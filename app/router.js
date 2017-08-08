@@ -16,12 +16,6 @@ Router.map(function() {
       this.route('settings', { path: '/settings' }, function() {
         this.route('team');
       });
-      this.route('integration-service');
-      this.route('campaign', { path: '/campaign' }, function() {
-        this.route('email-signup');
-        this.route('gated-content');
-      })
-      this.route('taxonomy');
     });
   }),
 
