@@ -28,6 +28,8 @@ export default Service.extend({
     return (activeOrg) ? activeOrg : defaultOrg;
   }),
 
+  canManageOrg: computed.equal('activeOrg.role', 'Owner'),
+
   createNewOrg({ name }) {
     const uid = this.get('userManager.uid');
     const validate = () => {
@@ -46,9 +48,8 @@ export default Service.extend({
       .then((snap) => {
         const oid = snap.key;
         const path = `owner-readable/user-organizations/${uid}/organizations/${oid}`;
-        return this.get('fb').waitUntilExists(path);
+        return this.get('fb').waitUntilExists(path).then(() => oid);
       })
-      .then(() => this.setUserOrgsFor(uid))
     ;
   },
 

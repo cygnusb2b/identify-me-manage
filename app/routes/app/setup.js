@@ -7,5 +7,8 @@ export default Route.extend({
     transitionTo(routeName) {
       this.transitionTo(routeName);
     },
+    logout() {
+      this.get('userManager').signOutCurrentUser();
+    }
   },
 });

@@ -10,15 +10,17 @@ Router.map(function() {
   this.route('app', { path: '/' }, function() {
     this.route('welcome');
     this.route('setup');
+    this.route('settings');
+    this.route('organization-create', { path: '/organization/new'});
     this.route('organization', { path: '/organization/:id' }, function() {
-      this.route('taxonomy');
+      this.route('settings', { path: '/settings' }, function() {
+        this.route('team');
+      });
     });
   }),
-  this.route('user', { path: '/__/auth/action' });
 
-  this.route('app', function() {
-    this.route('organization');
-  });
+  // Unauthenticated
+  this.route('user', { path: '/__/auth/action' });
 });
 
 export default Router;

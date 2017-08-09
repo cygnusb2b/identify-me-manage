@@ -3,6 +3,9 @@
     <div class="card">
       <div class="card-header">
         Setup New Account
+        <button type="button" class="close float-right" aria-label="Cancel" {{action (route-action "logout")}} disabled={{eq isLoading true}}>
+          <span aria-hidden="true">{{-ion "close"}}</span>
+        </button>
       </div>
       <div class="card-block">
         {{#if session.currentUser.emailVerified}}

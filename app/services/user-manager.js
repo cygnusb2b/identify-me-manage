@@ -29,6 +29,10 @@ export default Service.extend({
     return this.get('session.isAuthenticated');
   }),
 
+  canUseApp: computed('orgManager.hasOrgs', 'authObj.emailVerfied', function() {
+    return this.get('orgManager.hasOrgs') && this.get('authObj.emailVerified');
+  }),
+
   processAction(mode, code) {
     const validate = () => {
       if (!mode || !code) {
@@ -186,7 +190,11 @@ export default Service.extend({
    * @return {Promise<void>}
    */
   signOutCurrentUser() {
-    return this.get('fb.auth').signOut().then(() => this.clearCurrentUser());
+    return this.get('fb.auth')
+      .signOut()
+      .then(() => this.clearCurrentUser())
+      .then(() => window.location.reload())
+    ;
   },
 
   fetchSession() {
