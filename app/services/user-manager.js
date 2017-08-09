@@ -29,7 +29,7 @@ export default Service.extend({
     return this.get('session.isAuthenticated');
   }),
 
-  canUseApp: computed('orgManager.hasOrgs', 'authObj.emailVerfied', function() {
+  canUseApp: computed('orgManager.hasOrgs', 'authObj.emailVerified', function() {
     return this.get('orgManager.hasOrgs') && this.get('authObj.emailVerified');
   }),
 
@@ -56,20 +56,19 @@ export default Service.extend({
       .then(() => this.applyActionCode(code))
       .then(() => {
         if (this.get('authEmail')) {
-          return this.get('authObj').reload();
-        }
-      })
-      .then(() => {
-        if (this.get('authEmail')) {
-          return this.notifyLogin(this.get('authObj'));
+          return Promise.resolve()
+            .then(() => this.get('authObj').reload())
+            .then(() => this.get('authObj').getToken(true))
+            .then(() => this.notifyLogin(this.get('authObj')))
+          ;
         }
       })
     ;
   },
 
   /**
-   * 
-   * @param {string} code 
+   *
+   * @param {string} code
    * @return {Promise<void>}
    */
   applyActionCode(code) {
@@ -77,7 +76,7 @@ export default Service.extend({
   },
 
   /**
-   * 
+   *
    * @param {string} code The action code to check.
    * @return {Promise<firebase.auth.ActionCodeInfo>}
    */
@@ -107,7 +106,7 @@ export default Service.extend({
   },
 
   /**
-   * 
+   *
    * @param {firebase.User} user
    * @return {Promise<void>}
    */
@@ -129,6 +128,7 @@ export default Service.extend({
     return RSVP.Promise.resolve()
       .then(() => this.get('session').open('firebase', { provider, email, password }))
       .then(data => data.currentUser)
+      .then(user => user.getToken(true).then(() => user))
       .then(user => this.notifyLogin(user))
       .then(user => this.setCurrentUserModel(user.uid).then(() => user))
       .then(user => this.get('orgManager').setUserOrgsFor(user.uid).then(() => user))
@@ -147,15 +147,14 @@ export default Service.extend({
   },
 
   /**
-   * 
+   *
    * @param {firebase.User} user
    * @return {Promise<firebase.User>}
    */
   notifyLogin(user) {
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
     return RSVP.Promise.resolve()
-      .then(() => user.getToken())
-      .then(token => writeTo('set', 'login', user.uid, { token }))
+      .then(() => writeTo('set', 'login', user.uid, {}))
       .then(() => user)
     ;
   },
