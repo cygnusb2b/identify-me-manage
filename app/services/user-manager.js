@@ -56,17 +56,11 @@ export default Service.extend({
       .then(() => this.applyActionCode(code))
       .then(() => {
         if (this.get('authEmail')) {
-          return this.get('authObj').reload();
-        }
-      })
-      .then(() => {
-        if (this.get('authEmail')) {
-          return this.get('authObj').getToken(true);
-        }
-      })
-      .then(() => {
-        if (this.get('authEmail')) {
-          return this.notifyLogin(this.get('authObj'));
+          return Promise.resolve()
+            .then(() => this.get('authObj').reload())
+            .then(() => this.get('authObj').getToken(true))
+            .then(() => this.notifyLogin(this.get('authObj')))
+          ;
         }
       })
     ;
