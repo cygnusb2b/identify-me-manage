@@ -8,7 +8,12 @@ export default Route.extend({
       this.transitionTo(routeName);
     },
     transitionToOrg() {
-      this.transitionTo('app.organization.index', this.get('orgManager.activeOrg.id'));
+      const oid = this.get('orgManager.activeOrg.id');
+      if (oid) {
+        this.transitionTo('app.organization.index', oid);
+      } else {
+        this.transitionTo('app.setup');
+      }
     },
   },
 });
