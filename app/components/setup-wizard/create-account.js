@@ -15,8 +15,13 @@ export default Component.extend({
 
       this.set('isLoading', true);
       this.set('error', null);
+      
+      
+      const uid = this.get('userManager.uid');
+      const orgManager = this.get('orgManager');
 
-      this.get('orgManager').createNewOrg(this.get('account'))
+      orgManager.createNewOrg(this.get('account'))
+        .then(() => orgManager.setUserOrgsFor(uid))
         .then(() => this.sendAction('on-wizard-complete'))
         .catch(error => this.set('error', error))
         .finally(() => this.set('isLoading', false))

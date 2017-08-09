@@ -4,7 +4,7 @@ const { Route } = Ember;
 
 export default Route.extend({
   actions: {
-    onComplete(orgId) {
+    transitionToOrg(orgId) {
       this.transitionTo('app.organization.index', orgId);
     },
   },
