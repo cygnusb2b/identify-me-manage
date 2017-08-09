@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import RSVP from 'rsvp';
 
-const { Service, inject: { service }, computed, get } = Ember;
+const { Service, inject: { service }, computed, get, RSVP: { Promise } } = Ember;
 
 export default Service.extend({
   session: service(),
@@ -45,7 +45,7 @@ export default Service.extend({
 
     const currentEmail = this.get('authEmail');
 
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => validate())
       .then(() => this.checkActionCode(code))
       .then(actionCodeInfo => {
@@ -96,7 +96,7 @@ export default Service.extend({
       }
     }
 
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => validate())
       .then(() => this.get('fb.auth').createUserWithEmailAndPassword(email, password))
       .then(user => this.sendEmailVerification(user).then(() => user))
@@ -112,7 +112,7 @@ export default Service.extend({
    */
   sendEmailVerification(user) {
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => user.sendEmailVerification())
       .then(() => writeTo('set', 'verification-sent', user.uid, (new Date()).valueOf()))
     ;
@@ -125,7 +125,7 @@ export default Service.extend({
    */
   signInUser(email, password) {
     const provider = 'password';
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => this.get('session').open('firebase', { provider, email, password }))
       .then(data => data.currentUser)
       .then(user => user.getToken(true).then(() => user))
@@ -137,11 +137,11 @@ export default Service.extend({
 
   updateProfileData(data) {
     if (!this.get('isAuthed')) {
-      return RSVP.Promise.reject(new Error('The user is currently not authenticated'));
+      return Promise.reject(new Error('The user is currently not authenticated'));
     }
 
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => writeTo('set', 'user-profile', this.get('uid'), data))
     ;
   },
@@ -153,7 +153,7 @@ export default Service.extend({
    */
   notifyLogin(user) {
     const writeTo = this.get('fb').setToOwnerWriteableQueue.bind(this.get('fb'));
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => writeTo('set', 'login', user.uid, {}))
       .then(() => user)
     ;
@@ -201,7 +201,7 @@ export default Service.extend({
   },
 
   initializeCurrentUser() {
-    return RSVP.Promise.resolve()
+    return Promise.resolve()
       .then(() => this.fetchSession())
       .then(() => {
         if (this.get('session.isAuthenticated')) {
