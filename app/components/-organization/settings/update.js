@@ -10,7 +10,6 @@ export default Component.extend({
   orgManager: service(),
 
   modifiableFields: computed('orgManager.activeOrg', function() {
-    console.warn(this.get('orgManager.activeOrg'));
     return {
       name: this.get('orgManager.activeOrg.name'),
       // photoURL: this.get('organization.photoURL'),
