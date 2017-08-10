@@ -19,8 +19,18 @@ function getOrgWriteableQueuePath(name) {
   return `/org-writeable/${name}-queue/{uid}/{oid}`;
 }
 
-function getOrgOwnerWriteableQueuePath(name) {
+function getOrgWriteableOwnerQueuePath(name) {
   return `/org-writeable-owner/${name}-queue/{uid}/{oid}`;
+}
+
+function filterEmptyValues(object, keys) {
+  const newObj = {};
+  Object.keys(object).forEach((key) => {
+    if (keys.includes(key) && object[key]) {
+      newObj[key] = object[key];
+    }
+  });
+  return newObj
 }
 
 /**
@@ -110,6 +120,45 @@ exports.loginQueue = functions.database.ref(getOwnerWriteableQueuePath('login'))
     .then(() => event.data.ref.remove())
     .then(() => user)
     .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
+ * Org Writeable, Org Update Queue
+ */
+exports.orgUpdate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org-update')}/{key}`).onCreate((event) => {
+  const oid = event.params.oid;
+  const payload = filterEmptyValues(event.data.val(), ['name', 'photoURL']);
+  return Promise.resolve()
+    .then(() => admin.database().ref(`/organizations/${oid}`).update(payload))
+    .then(() => event.data.ref.remove())
+    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
+ * Updates org memberships from org updates
+ */
+exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpdate((event) => {
+  const oid = event.params.oid;
+  const payload = filterEmptyValues(event.data.val(), ['name', 'photoURL']);
+  const uids = [];
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`org-readable/${oid}/users`).once('value'))
+    .then(snap => snap.forEach(child => uids.push(child.key)))
+    .then(() => {
+      const refs = {};
+      uids.forEach((uid) => {
+        Object.keys(payload).forEach(key => {
+          const path = `/owner-readable/user-organizations/${uid}/organizations/${oid}/${key}`;
+          refs[path] = payload[key];
+        })
+      });
+      if (refs.length !== 0) {
+        return admin.database().ref().update(refs);
+      }
+    })
   ;
 });
 
