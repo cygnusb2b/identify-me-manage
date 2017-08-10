@@ -4,7 +4,7 @@ const crypto = require('crypto');
 admin.initializeApp(functions.config().firebase);
 
 function getNowTimestamp() {
-  return (new Date()).valueOf();
+  return admin.database.ServerValue.TIMESTAMP;
 }
 
 function getOwnerReadableUsersRef(uid) {
@@ -13,6 +13,14 @@ function getOwnerReadableUsersRef(uid) {
 
 function getOwnerWriteableQueuePath(name) {
   return `/owner-writeable/${name}-queue/{uid}`;
+}
+
+function getOrgWriteableQueuePath(name) {
+  return `/org-writeable/${name}-queue/{uid}/{oid}`;
+}
+
+function getOrgOwnerWriteableQueuePath(name) {
+  return `/org-writeable-owner/${name}-queue/{uid}/{oid}`;
 }
 
 /**
@@ -64,7 +72,7 @@ exports.verificationSentQueueCreate = functions.database.ref(getOwnerWriteableQu
 exports.verificationSentQueueUpdate = functions.database.ref(getOwnerWriteableQueuePath('verification-sent')).onUpdate(verificationSentQueueFunc);
 
 /**
- * Owner Writeable, User Profile Queue 
+ * Owner Writeable, User Profile Queue
  */
 const userProfileQueueFunc = (event) => {
   const uid = event.params.uid;
@@ -75,6 +83,7 @@ const userProfileQueueFunc = (event) => {
   const user = {
     firstName: profile.firstName || null,
     lastName: profile.lastName || null,
+    photoURL: profile.photoURL || null,
     updatedAt: getNowTimestamp(),
   };
 
@@ -169,9 +178,10 @@ exports.ownerReadableUserOrgCreate = functions.database.ref('owner-readable/user
         data.email = user.email || null;
         data.firstName = user.firstName || null;
         data.lastName = user.lastName || null;
+        data.photoURL = user.photoURL || null;
         return admin.database().ref(`org-readable/${oid}/users/${uid}`).set(data);
       }
-      
+
     })
   ;
 });
