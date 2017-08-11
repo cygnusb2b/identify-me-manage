@@ -5,24 +5,20 @@ const { Component, computed, inject: { service } } = Ember;
 export default Component.extend({
   isLoading: false,
   error: null,
-  organization: null,
-  store: service(),
-  orgManager: service(),
+  organization: computed.reads('orgManager.activeOrg'),
 
-  modifiableFields: computed('orgManager.activeOrg', function() {
-    return {
-      name: this.get('orgManager.activeOrg.name'),
-      // photoURL: this.get('organization.photoURL'),
-    };
+  isDisabled: computed('isLoading', 'organization.hasDirtyAttributes', function() {
+    return this.get('isLoading') || !this.get('organization.hasDirtyAttributes');
   }),
 
   actions: {
     update() {
-        this.get('store').createRecord('org-writeable-owner/org-update-queue/$uid/$oid', this.get('modifiableFields')).save()
-          .then(() => this.set('loading', false))
-          .then(() => this.set('error', null))
-          .catch(e => this.set('error', e))
-        ;
+      this.set('isLoading', true);
+      this.set('error', null);
+      this.get('organization').save()
+        .catch(e => this.set('error', e))
+        .finally(() => this.set('isLoading', false))
+      ;
     }
   }
 });

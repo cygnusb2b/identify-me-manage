@@ -2,9 +2,9 @@
   <div class="card-header">General Settings</div>
   <div class="card-block">
 
-    {{-form/organization/update organization=modifiableFields}}
+    {{-form/organization/update organization=organization}}
 
-    {{#-bs/button "primary" click=(action "update") disabled=(eq isLoading true)}}Update{{/-bs/button}}
+    {{#-bs/button "primary" click=(action "update") disabled=isDisabled}}Update{{/-bs/button}}
 
     {{#if isLoading}}
       <div class="mt-3">

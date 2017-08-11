@@ -26,7 +26,7 @@ function getOrgWriteableOwnerQueuePath(name) {
 function filterEmptyValues(object, keys) {
   const newObj = {};
   Object.keys(object).forEach((key) => {
-    if (keys.includes(key) && object[key]) {
+    if (keys.includes(key) && object[key] !== null) {
       newObj[key] = object[key];
     }
   });
