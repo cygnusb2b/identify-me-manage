@@ -1,10 +1,11 @@
 import Ember from 'ember';
+import firebase from 'firebase';
 import * as PERMS from 'manage/constants/permission-paths';
 
 const { Service, inject: { service }, computed, RSVP: { Promise } } = Ember;
 
 /**
- * 
+ *
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
  * @param {string} path The database path to write to.
@@ -22,10 +23,10 @@ function createQueueName(name) {
 /**
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
- * @param {string} name 
- * @param {string} uid 
- * @param {string} oid 
- * @param {*} value 
+ * @param {string} name
+ * @param {string} uid
+ * @param {string} oid
+ * @param {*} value
  */
 function writeToOrgOwnerQueue(db, cmd, permission, name, uid, oid, value) {
   const path = `${permission}/${createQueueName(name)}/${uid}/${oid}`;
@@ -33,12 +34,12 @@ function writeToOrgOwnerQueue(db, cmd, permission, name, uid, oid, value) {
 }
 
 /**
- * 
+ *
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
- * @param {string} name 
- * @param {string} uid 
- * @param {*} value 
+ * @param {string} name
+ * @param {string} uid
+ * @param {*} value
  */
 function writeToUserQueue(db, cmd, permission, name, uid, value) {
   const path = `${permission}/${createQueueName(name)}/${uid}`;
@@ -64,9 +65,13 @@ export default Service.extend({
     return this.get('database');
   },
 
+  getTimestamp() {
+    return firebase.database.ServerValue.TIMESTAMP;
+  },
+
   /**
    * Writes a value to a `org-owner-writeable` queue.
-   * 
+   *
    * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
    * @param {string} name The name of the queue.
    * @param {string} uid The user identifier of the active user.
@@ -80,7 +85,7 @@ export default Service.extend({
 
   /**
    * Writes a value to a `user-writeable` queue.
-   * 
+   *
    * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
    * @param {string} name The name of the queue.
    * @param {string} uid The user identifier of the active user.
@@ -97,7 +102,7 @@ export default Service.extend({
    * If the value already exists, the promise will be resolved immediately.
    * The listener will be immediately detached (via `.off()`) once the value is retrieved.
    * The promise will be rejected if the listener attachment fails (e.g. no permission to read).
-   * 
+   *
    * @param {string} path The path to wait on.
    * @return {Promise<*>} A promise containing the path's value.
    */
