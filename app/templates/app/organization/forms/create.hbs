@@ -27,9 +27,9 @@
       </ul>
     </div>
   </div>
-  <div class="col pt-3">
-    <div class="form-canvas">
-       {{#each builder.fields as |field index|}}
+  {{#sortable-group class="col pt-3 form-canvas" onChange=(action builder.reorderFields) as |group|}}
+    {{#each builder.fields as |field index|}}
+      {{#sortable-item class="p-2 form-field" model=field group=group handle=".form-sort-handle"}}
         {{form-builder/selected-field
           field=field
           index=index
@@ -39,9 +39,10 @@
           on-move-up=(action builder.moveField index 'up')
           on-move-down=(action builder.moveField index 'down')
         }}
-      {{/each}}
-      </div>
-  </div>
+      {{/sortable-item}}
+    {{/each}}
+  {{/sortable-group}}
+
   {{#-bs/modal show=builder.hasSelectedField size="large" onHidden=(action builder.selectField null) as |modal|}}
     {{#modal.header as |header|}}
       {{#header.title tagName="div"}}

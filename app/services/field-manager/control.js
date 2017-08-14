@@ -28,5 +28,5 @@ export default function Control(key, name, defaultVals) {
       return accum;
     }, {});
   }
-  return Object.freeze({ key, name, supports, defaults, attributes });
+  return { key, name, supports, defaults, attributes };
 }

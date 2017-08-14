@@ -4,10 +4,10 @@ import Control from 'manage/services/field-manager/control';
  * @type {Control[]}
  */
 const controls = [
-  Control('input-checkbox', 'Checkboxes'),
+  Control('input-checkbox', 'Checkboxes', { options: [] }),
   Control('input-email', 'Email Input'),
   Control('input-number', 'Number Input'),
-  Control('input-radio', 'Radio Buttons'),
+  Control('input-radio', 'Radio Buttons', { options: [] }),
   Control('input-text', 'Text Input'),
   Control('input-url', 'URL Input'),
   Control('select', 'Select Box', { placeholder: 'Please select...', options: [] }),

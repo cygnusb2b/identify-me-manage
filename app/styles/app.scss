@@ -8,6 +8,13 @@ body {
     margin-top: 70px;
     margin-bottom: 50px;
 }
+.form-field {
+    border: 1px solid transparent;
+}
+
+.form-field:hover {
+    border: 1px dashed #ccc;
+}
 
 a[data-ember-action]:not(:disabled),
 .clickable {

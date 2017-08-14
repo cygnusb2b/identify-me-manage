@@ -2,14 +2,14 @@
   <li class="nav-item">
     <a class="nav-link active" data-toggle="tab" href="#field-general" role="tab">General</a>
   </li>
-  <li class="nav-item">
-    <a class="nav-link" data-toggle="tab" href="#field-attributes" role="tab">Attributes</a>
-  </li>
   {{#if control.supports.options}}
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#field-choices" role="tab">Choices</a>
     </li>
   {{/if}}
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#field-attributes" role="tab">Attributes</a>
+  </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#field-preview" role="tab">Preview</a>
   </li>
@@ -45,9 +45,37 @@
           value=field.helpText
           helpText="Short text that describes the field, or provides instructions to the user."
         }}
+
+        {{#if hasMultipleControls}}
+          <div class="form-group mt-3 mb-0">
+            <label>How should the field be displayed?</label>
+            <div class="custom-controls-stacked">
+              {{#each field.type.controls as |availableControl|}}
+                <label class="custom-control custom-radio">
+                  {{-bs/forms/radio
+                    name="field-control-type"
+                    class="custom-control-input"
+                    value=(readonly availableControl.key)
+                    checked=(readonly control.key)
+                    on-change=(action "switchControl")
+                  }}
+                  <span class="custom-control-indicator"></span>
+                  <span class="custom-control-description">{{ availableControl.name }}</span>
+                </label>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+
+
       {{/-bs/col}}
     {{/-bs/row}}
   </div>
+  {{#if control.supports.options}}
+    <div class="tab-pane" id="field-choices" role="tabpanel">
+      {{form-builder/options-editor options=field.attributes.options}}
+    </div>
+  {{/if}}
   <div class="tab-pane" id="field-attributes" role="tabpanel">
     {{#-bs/row}}
       {{#-bs/col}}
@@ -63,11 +91,6 @@
       {{/-bs/col}}
     {{/-bs/row}}
   </div>
-  {{#if control.supports.options}}
-    <div class="tab-pane" id="field-choices" role="tabpanel">
-      {{!-- This will likely need to be a different component per field type --}}
-    </div>
-  {{/if}}
   <div class="tab-pane" id="field-preview" role="tabpanel">
     {{form-builder/field-preview field=field attributes=field.attributes}}
   </div>

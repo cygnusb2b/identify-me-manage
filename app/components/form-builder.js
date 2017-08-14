@@ -50,6 +50,9 @@ export default Component.extend({
     removeField(field) {
       this.get('fields').removeObject(field);
     },
+    reorderFields(ordered) {
+      this.set('fields', ordered);
+    },
     selectField(field) {
       this.set('selected', field);
     },

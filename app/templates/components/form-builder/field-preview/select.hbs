@@ -1,8 +1,10 @@
 {{#form-builder/field-preview/-input field=field attributes=attributes}}
-  {{-bs/forms/custom-select class="form-control"
-    options=attributes.options
-    disabled=attributes.disabled
-    readonly=attributes.readonly
-    required=attributes.required
-  }}
+  <select class="custom-select form-control" disabled={{attributes.disabled}} readonly={{attributes.readonly}} required={{attributes.required}}>
+    {{#if attributes.placeholder}}
+      <option value="">{{ attributes.placeholder }}</option>
+    {{/if}}
+    {{#each sortedOptions as |option|}}
+      <option value={{option.value}}>{{ option.label }}</option>
+    {{/each}}
+  </select>
 {{/form-builder/field-preview/-input}}
