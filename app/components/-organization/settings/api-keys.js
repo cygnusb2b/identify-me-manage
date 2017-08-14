@@ -15,6 +15,7 @@ export default Component.extend({
 
   actions: {
     createKey() {
+      this.set('error', null);
       this.set('isLoading', true);
       this.get('store').createRecord('org-readable/$oid/keys').save()
         .catch((e) => this.set('error', e))
