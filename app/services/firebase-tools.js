@@ -78,9 +78,9 @@ export default Service.extend({
    * @param {string} oid The organization identifier.
    * @param {*} value The value to write to the queue.
    */
-  setToOrgOwnerWriteableQueue(cmd, name, uid, oid, value) {
+  setToOrgWriteableOwnerQueue(cmd, name, uid, oid, value) {
     const db = this.get('database');
-    return writeToOrgOwnerQueue(db, cmd, PERMS.ORG_OWNER_WRITEABLE, name, uid, oid, value);
+    return writeToOrgOwnerQueue(db, cmd, PERMS.ORG_WRITEABLE_OWNER, name, uid, oid, value);
   },
 
   /**

@@ -22,7 +22,7 @@ export default Model.extend({
     const uid = this.get('userManager.uid');
     const oid = this.get('id');
 
-    const writeTo = this.get('fb').setToOrgOwnerWriteableQueue.bind(this.get('fb'));
+    const writeTo = this.get('fb').setToOrgWriteableOwnerQueue.bind(this.get('fb'));
     const payload = assign({}, this.getProperties('name', 'photoURL'), { updatedAt: this.get('fb').getTimestamp() });
     return Promise.resolve()
       .then(() => writeTo('push', 'org-update', uid, oid, payload))
