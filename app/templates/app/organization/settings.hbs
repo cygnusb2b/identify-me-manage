@@ -1,24 +1,9 @@
+{{-organization/nav}}
+
 {{#-bs/row class="justify-content-center"}}
   {{#-bs/col sm=12 md=10 lg=8}}
-    <ul class="nav nav-pills card-header-pills float-right" role="tablist">
-      <li class="nav-item">
-        {{#link-to "app.organization.settings.index" model.id class="nav-link"}}
-          {{-ion "gear-a"}} Settings
-        {{/link-to}}
-      </li>
-      <li class="nav-item">
-        {{#link-to "app.organization.settings.team" model.id class="nav-link"}}
-          {{-ion "ios-people"}} Team
-        {{/link-to}}
-      </li>
-    </ul>
-    <h2>
-      <img src="{{model.photoURL}}" class="icon icon-lg mr-4" alt={{model.name}}>
-      {{model.name}}
-    </h2>
-    
+
+    {{-organization/settings/update}}
+
   {{/-bs/col}}
 {{/-bs/row}}
-<hr>
-
-{{outlet}}

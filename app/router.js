@@ -13,9 +13,8 @@ Router.map(function() {
     this.route('settings');
     this.route('organization-create', { path: '/organization/new'});
     this.route('organization', { path: '/organization/:id' }, function() {
-      this.route('settings', { path: '/settings' }, function() {
-        this.route('team');
-      });
+      this.route('settings');
+      this.route('team');
     });
   }),
 

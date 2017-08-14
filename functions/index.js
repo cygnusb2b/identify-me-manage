@@ -4,7 +4,7 @@ const crypto = require('crypto');
 admin.initializeApp(functions.config().firebase);
 
 function getNowTimestamp() {
-  return (new Date()).valueOf();
+  return admin.database.ServerValue.TIMESTAMP;
 }
 
 function getOwnerReadableUsersRef(uid) {
@@ -13,6 +13,14 @@ function getOwnerReadableUsersRef(uid) {
 
 function getOwnerWriteableQueuePath(name) {
   return `/owner-writeable/${name}-queue/{uid}`;
+}
+
+function getOrgWriteableQueuePath(name) {
+  return `/org-writeable/${name}-queue/{uid}/{oid}`;
+}
+
+function getOrgWriteableOwnerQueuePath(name) {
+  return `/org-writeable-owner/${name}-queue/{uid}/{oid}`;
 }
 
 /**
@@ -64,7 +72,7 @@ exports.verificationSentQueueCreate = functions.database.ref(getOwnerWriteableQu
 exports.verificationSentQueueUpdate = functions.database.ref(getOwnerWriteableQueuePath('verification-sent')).onUpdate(verificationSentQueueFunc);
 
 /**
- * Owner Writeable, User Profile Queue 
+ * Owner Writeable, User Profile Queue
  */
 const userProfileQueueFunc = (event) => {
   const uid = event.params.uid;
@@ -75,6 +83,7 @@ const userProfileQueueFunc = (event) => {
   const user = {
     firstName: profile.firstName || null,
     lastName: profile.lastName || null,
+    photoURL: profile.photoURL || null,
     updatedAt: getNowTimestamp(),
   };
 
@@ -101,6 +110,45 @@ exports.loginQueue = functions.database.ref(getOwnerWriteableQueuePath('login'))
     .then(() => event.data.ref.remove())
     .then(() => user)
     .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
+ * Org Writeable, Org Update Queue
+ */
+exports.orgUpdate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org-update')}/{key}`).onCreate((event) => {
+  const oid = event.params.oid;
+  const payload = event.data.val();
+  return Promise.resolve()
+    .then(() => admin.database().ref(`/organizations/${oid}`).update(payload))
+    .then(() => event.data.ref.remove())
+    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
+ * Updates org memberships from org updates
+ */
+exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpdate((event) => {
+  const oid = event.params.oid;
+  const payload = event.data.val();
+  const uids = [];
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`org-readable/${oid}/users`).once('value'))
+    .then(snap => snap.forEach(child => uids.push(child.key)))
+    .then(() => {
+      const refs = {};
+      uids.forEach((uid) => {
+        Object.keys(payload).forEach(key => {
+          const path = `/owner-readable/user-organizations/${uid}/organizations/${oid}/${key}`;
+          refs[path] = payload[key];
+        })
+      });
+      if (refs.length !== 0) {
+        return admin.database().ref().update(refs);
+      }
+    })
   ;
 });
 
@@ -169,9 +217,10 @@ exports.ownerReadableUserOrgCreate = functions.database.ref('owner-readable/user
         data.email = user.email || null;
         data.firstName = user.firstName || null;
         data.lastName = user.lastName || null;
+        data.photoURL = user.photoURL || null;
         return admin.database().ref(`org-readable/${oid}/users/${uid}`).set(data);
       }
-      
+
     })
   ;
 });
