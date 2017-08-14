@@ -153,6 +153,44 @@ exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpda
 });
 
 /**
+ * Org Writeable Owner, Org API Key Create Queue
+ */
+exports.orgApiKeyCreate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('api-key-create')}/{key}`).onCreate((event) => {
+  const now = getNowTimestamp();
+  const uid = event.params.uid;
+  const oid = event.params.oid;
+  const key = event.params.key;
+  const kvs = {
+    createdAt: now,
+    createdBy: uid,
+  };
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`api-keys/${key}`).set(oid))
+    .then(() => admin.database().ref(`org-readable/${oid}/keys/${key}`).set(kvs))
+    .then(() => event.data.ref.remove())
+    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
+ * Org Writeable Owner, Org API Key Invalidate Queue
+ */
+exports.orgApiKeyInvalidate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('api-key-invalidate')}/{key}`).onCreate((event) => {
+  const now = getNowTimestamp();
+  const uid = event.params.uid;
+  const oid = event.params.oid;
+  const key = event.data.val().key;
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`api-keys/${key}`).remove())
+    .then(() => admin.database().ref(`org-readable/${oid}/keys/${key}`).remove())
+    .then(() => event.data.ref.remove())
+    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
  * Owner Writeable, Org Create Queue
  */
 exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('org-create')}/{oid}`).onCreate((event) => {
