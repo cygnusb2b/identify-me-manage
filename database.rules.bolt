@@ -13,6 +13,16 @@ type OrganizationUpdateQueue {
   updatedAt: CurrentTimestamp,
 }
 
+type OrganizationApiKeyCreateQueue {
+  key: NonEmptyString,
+  createdAt: CurrentTimestamp,
+}
+
+type OrganizationApiKeyInvalidateQueue {
+  key: NonEmptyString,
+  deletedAt: CurrentTimestamp,
+}
+
 type NonEmptyString extends String {
   validate() { this.length > 1 }
 }
@@ -62,9 +72,14 @@ path /org-readable-owner/{oid} {
   read() { isOrgOwner(oid) }
 }
 
-path /org-writeable/{type}/{uid}/{oid} {
-  write() { auth.uid === uid && isOrgMember(oid) }
+path /org-writeable/api-key-create-queue/{uid}/{oid}/{qid} is OrganizationApiKeyCreateQueue {
+    write() { auth.uid === uid && isOrgMember(oid) }
 }
+
+path /org-writeable-owner/api-key-invalidate-queue/{uid}/{oid}/{qid} is OrganizationApiKeyInvalidateQueue {
+    write() { auth.uid === uid && isOrgOwner(oid) }
+}
+
 path /org-writeable-owner/org-update-queue/{uid}/{oid}/{qid} is OrganizationUpdateQueue {
     write() { auth.uid === uid && isOrgOwner(oid) }
 }

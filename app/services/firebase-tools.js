@@ -34,6 +34,19 @@ function writeToOrgOwnerQueue(db, cmd, permission, name, uid, oid, value) {
 }
 
 /**
+ * @param {firebase.database.Database} db The firebase database instance.
+ * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+ * @param {string} name
+ * @param {string} uid
+ * @param {string} oid
+ * @param {*} value
+ */
+function writeToOrgQueue(db, cmd, permission, name, uid, oid, value) {
+  const path = `${permission}/${createQueueName(name)}/${uid}/${oid}`;
+  return dbWrite(db, cmd, path, value);
+}
+
+/**
  *
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
@@ -81,6 +94,21 @@ export default Service.extend({
   setToOrgOwnerWriteableQueue(cmd, name, uid, oid, value) {
     const db = this.get('database');
     return writeToOrgOwnerQueue(db, cmd, PERMS.ORG_OWNER_WRITEABLE, name, uid, oid, value);
+  },
+
+
+  /**
+   * Writes a value to a `org-writeable` queue.
+   *
+   * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+   * @param {string} name The name of the queue.
+   * @param {string} uid The user identifier of the active user.
+   * @param {string} oid The organization identifier.
+   * @param {*} value The value to write to the queue.
+   */
+  setToOrgWriteableQueue(cmd, name, uid, oid, value) {
+    const db = this.get('database');
+    return writeToOrgQueue(db, cmd, PERMS.ORG_WRITEABLE, name, uid, oid, value);
   },
 
   /**
