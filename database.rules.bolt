@@ -72,8 +72,8 @@ path /org-readable-owner/{oid} {
   read() { isOrgOwner(oid) }
 }
 
-path /org-writeable/api-key-create-queue/{uid}/{oid}/{qid} is OrganizationApiKeyCreateQueue {
-    write() { auth.uid === uid && isOrgMember(oid) }
+path /org-writeable-owner/api-key-create-queue/{uid}/{oid}/{qid} is OrganizationApiKeyCreateQueue {
+    write() { auth.uid === uid && isOrgOwner(oid) }
 }
 
 path /org-writeable-owner/api-key-invalidate-queue/{uid}/{oid}/{qid} is OrganizationApiKeyInvalidateQueue {

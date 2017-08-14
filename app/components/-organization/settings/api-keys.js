@@ -23,11 +23,9 @@ export default Component.extend({
     },
     invalidate() {
       const key = this.get('activeKey');
-      key.set('deletedAt', this.get('fb').getTimestamp());
-      key.deleteRecord();
-
       this.set('isLoading', true);
-      key.save()
+
+      key.destroyRecord()
         .catch((e) => this.set('error', e))
         .finally(() => this.set('activeKey', null))
         .finally(() => this.set('isInvalidateModalShown', false))

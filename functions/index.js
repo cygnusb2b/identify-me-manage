@@ -153,9 +153,9 @@ exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpda
 });
 
 /**
- * Org Writeable, Org API Key Create Queue
+ * Org Writeable Owner, Org API Key Create Queue
  */
-exports.orgApiKeyCreate = functions.database.ref(`${getOrgWriteableQueuePath('api-key-create')}/{key}`).onCreate((event) => {
+exports.orgApiKeyCreate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('api-key-create')}/{key}`).onCreate((event) => {
   const now = getNowTimestamp();
   const uid = event.params.uid;
   const oid = event.params.oid;
@@ -174,7 +174,7 @@ exports.orgApiKeyCreate = functions.database.ref(`${getOrgWriteableQueuePath('ap
 });
 
 /**
- * Org Owner Writeable, Org API Key Invalidate Queue
+ * Org Writeable Owner, Org API Key Invalidate Queue
  */
 exports.orgApiKeyInvalidate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('api-key-invalidate')}/{key}`).onCreate((event) => {
   const now = getNowTimestamp();

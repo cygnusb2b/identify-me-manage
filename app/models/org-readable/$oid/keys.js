@@ -1,7 +1,7 @@
 import Model from 'ember-data/model';
 import Ember from 'ember';
 import attr from 'ember-data/attr';
-const { inject: { service }, computed, RSVP: { Promise } } = Ember;
+const { inject: { service }, computed, RSVP: { Promise }, assign } = Ember;
 
 export default Model.extend({
   userManager: service(),
@@ -11,6 +11,11 @@ export default Model.extend({
   createdAt: attr('string'),
   deletedAt: attr('string'),
   key: computed.reads('id'),
+
+  deleteRecord() {
+    this.set('deletedAt', this.get('fb').getTimestamp());
+    this._super(...arguments);
+  },
 
   save() {
     const uid = this.get('userManager.uid');
@@ -25,8 +30,8 @@ export default Model.extend({
   _executeKeyCreate(uid, oid) {
     if (this.get('isNew')) {
       this.set('createdAt', this.get('fb').getTimestamp());
-      const writeTo = this.get('fb').setToOrgWriteableQueue.bind(this.get('fb'));
-      const payload = Object.assign({}, this.getProperties('key', 'createdAt'));
+      const writeTo = this.get('fb').setToOrgWriteableOwnerQueue.bind(this.get('fb'));
+      const payload = assign({}, this.getProperties('key', 'createdAt'));
       return Promise.resolve()
         .then(() => writeTo('push', 'api-key-create', uid, oid, payload))
         .then((snap) => {
@@ -41,7 +46,7 @@ export default Model.extend({
   _executeKeyInvalidate(uid, oid) {
     if (this.get('isDeleted')) {
       const writeTo = this.get('fb').setToOrgWriteableOwnerQueue.bind(this.get('fb'));
-      const payload = Object.assign({}, this.getProperties('key', 'deletedAt'));
+      const payload = assign({}, this.getProperties('key', 'deletedAt'));
       return Promise.resolve()
         .then(() => writeTo('push', 'api-key-invalidate', uid, oid, payload))
       ;
