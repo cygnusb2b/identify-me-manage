@@ -7,7 +7,6 @@ export default Component.extend({
   store: service(),
   fb: service('firebase-tools'),
 
-  isInvalidateModalShown: false,
   activeKey: null,
   isLoading: false,
   error: null,
