@@ -6,7 +6,7 @@ const ButtonComponent = Component.extend({
   tagName: 'button',
   classNames: ['btn'],
   classNameBindings: ['_typeClass', 'role', '_sizeClass', '_blockClass', '_disabledClass'],
-  attributeBindings: ['disabled', 'disabled:aria-disabled', 'type'],
+  attributeBindings: ['disabled', 'disabled:aria-disabled', 'type', 'toggle:data-toggle', 'title'],
   role: 'button',
   type: 'button',
 
@@ -15,6 +15,7 @@ const ButtonComponent = Component.extend({
   size: null, // If null, will be regular size, otherwise can pass large or small.
   isBlock: false, // Whether the button should be displayed as a block level button.
   disabled: false, // Whether the button us disabled.
+  toggle: null,
 
   _typeClass: computed('styleType', 'outline', function() {
     const outlineClass = this.get('outline') ? 'outline-' : '';
