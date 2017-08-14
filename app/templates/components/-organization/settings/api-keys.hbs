@@ -1,0 +1,58 @@
+<div class="card card-outline-muted mt-3">
+  <div class="card-header">API Keys</div>
+  <div class="card-block">
+
+    <small id="org.api-keys.help" class="form-text text-muted mb-2">
+      API keys are used to identify requests from your organization.
+    </small>
+
+    {{#each keys as |key|}}
+    <div class="row mb-4 mt-2">
+      <div class="col">
+        <p><strong>Key</strong>: <code>{{key.id}}</code></p>
+      </div>
+      <div class="col">
+        {{#-bs/button "danger" click=(action "showInvalidateModal" key) class="btn-sm float-right" disabled=(eq isLoading true)}}
+          {{-ion "ios-trash"}} Invalidate
+        {{/-bs/button}}
+      </div>
+    </div>
+    {{/each}}
+
+    {{#-bs/button "primary" click=(action "createKey") disabled=(eq isLoading true)}}
+      Generate key
+    {{/-bs/button}}
+
+    {{#if isLoading}}
+      <div class="mt-3">
+        <small class="text-muted">Updating API keys...</small>
+        {{#-bs/progress}}
+          {{-bs/progress/bar value=100 animated=true}}
+        {{/-bs/progress}}
+      </div>
+    {{/if}}
+
+    {{#if error}}
+      <div class="alert-danger alert mt-3 mb-0" role="alert"><strong>Oops!</strong> {{error.message}}</div>
+    {{/if}}
+
+  </div>
+</div>
+
+{{#-bs/modal show=isInvalidateModalShown as |modal|}}
+  {{modal.header title="Invalidate API key" showClose=true closeAction=(action "hideInvalidateModal")}}
+  {{#modal.body}}
+    <div class="row">
+      <div class="col">
+        <p>Please note that invalidating this API key will cause any existing deployments using it to stop working.</p>
+        <p>Before proceeding, please be sure to review the <a href="#" target="_blank">best practices {{-ion "link"}}</a> regarding API key management.</p>
+        <p><strong>API Key</strong>: <code>{{activeKey.id}}</code></p>
+      </div>
+    </div>
+  {{/modal.body}}
+  {{#modal.footer}}
+    {{#-bs/button "danger" click=(action "invalidate")}}
+      Yep, do it
+    {{/-bs/button}}
+  {{/modal.footer}}
+{{/-bs/modal}}

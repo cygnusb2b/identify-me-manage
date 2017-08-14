@@ -1,3 +1,44 @@
+initial(value, init) { value == (prior(value) == null ? init : prior(value)) }
+
+type Organization {
+  name: NonEmptyString,
+  photoURL: NonEmptyString,
+  createdAt: InitialTimestamp,
+  updatedAt: CurrentTimestamp
+}
+
+type OrganizationUpdateQueue {
+  name: NonEmptyString,
+  photoURL: NonEmptyString,
+  updatedAt: CurrentTimestamp,
+}
+
+type OrganizationDeleteQueue {
+  key: NonEmptyString,
+}
+
+type OrganizationApiKeyCreateQueue {
+  key: NonEmptyString,
+  createdAt: CurrentTimestamp,
+}
+
+type OrganizationApiKeyInvalidateQueue {
+  key: NonEmptyString,
+  deletedAt: CurrentTimestamp,
+}
+
+type NonEmptyString extends String {
+  validate() { this.length > 1 }
+}
+
+type CurrentTimestamp extends Number {
+  validate() { this == now }
+}
+
+type InitialTimestamp extends Number {
+  validate() { initial(this, now) }
+}
+
 isEmailVerified() { auth.token.email_verified === true }
 isOrgMember(oid) { isEmailVerified() && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid]) != null }
 isOrgOwner(oid) { isEmailVerified() && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid].role) === "Owner" }
@@ -18,27 +59,35 @@ path /writeable {
 }
 
 path /owner-readable/{type}/{uid} {
-    read() { auth.uid === uid }
+  read() { auth.uid === uid }
 }
 
 // @todo Each type should be defined here, not wildcarded with $type
 //       This ensures that random data cannot be written here.
 path /owner-writeable/{type}/{uid} {
-    write() { auth.uid === uid }
+  write() { auth.uid === uid }
 }
 
 path /org-readable/{oid} {
-    read() { isOrgMember(oid) }
+  read() { isOrgMember(oid) }
 }
 
 path /org-readable-owner/{oid} {
-    read() { isOrgOwner(oid) }
+  read() { isOrgOwner(oid) }
 }
 
-path /org-writeable/{type}/{uid}/{oid} {
+path /org-writeable/api-key-create-queue/{uid}/{oid}/{qid} is OrganizationApiKeyCreateQueue {
     write() { auth.uid === uid && isOrgMember(oid) }
 }
 
-path /org-writeable-owner/{type}/{uid}/{oid} {
+path /org-writeable-owner/api-key-invalidate-queue/{uid}/{oid}/{qid} is OrganizationApiKeyInvalidateQueue {
+    write() { auth.uid === uid && isOrgOwner(oid) }
+}
+
+path /org-writeable-owner/org-update-queue/{uid}/{oid}/{qid} is OrganizationUpdateQueue {
+    write() { auth.uid === uid && isOrgOwner(oid) }
+}
+
+path /org-writeable-owner/org-delete-queue/{uid}/{oid}/{qid} is OrganizationDeleteQueue {
     write() { auth.uid === uid && isOrgOwner(oid) }
 }

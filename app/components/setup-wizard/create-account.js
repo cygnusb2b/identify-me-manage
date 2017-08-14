@@ -15,12 +15,13 @@ export default Component.extend({
 
       this.set('isLoading', true);
       this.set('error', null);
-      
-      
+
+
       const uid = this.get('userManager.uid');
       const orgManager = this.get('orgManager');
 
       orgManager.createNewOrg(this.get('account'))
+        .then(oid => orgManager.setActiveOrgTo(oid))
         .then(() => orgManager.setUserOrgsFor(uid))
         .then(() => this.sendAction('on-wizard-complete'))
         .catch(error => this.set('error', error))

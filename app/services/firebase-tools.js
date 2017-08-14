@@ -1,10 +1,11 @@
 import Ember from 'ember';
+import firebase from 'firebase';
 import * as PERMS from 'manage/constants/permission-paths';
 
 const { Service, inject: { service }, computed, RSVP: { Promise } } = Ember;
 
 /**
- * 
+ *
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
  * @param {string} path The database path to write to.
@@ -20,12 +21,38 @@ function createQueueName(name) {
 }
 
 /**
- * 
  * @param {firebase.database.Database} db The firebase database instance.
  * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
- * @param {string} name 
- * @param {string} uid 
- * @param {*} value 
+ * @param {string} name
+ * @param {string} uid
+ * @param {string} oid
+ * @param {*} value
+ */
+function writeToOrgOwnerQueue(db, cmd, permission, name, uid, oid, value) {
+  const path = `${permission}/${createQueueName(name)}/${uid}/${oid}`;
+  return dbWrite(db, cmd, path, value);
+}
+
+/**
+ * @param {firebase.database.Database} db The firebase database instance.
+ * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+ * @param {string} name
+ * @param {string} uid
+ * @param {string} oid
+ * @param {*} value
+ */
+function writeToOrgQueue(db, cmd, permission, name, uid, oid, value) {
+  const path = `${permission}/${createQueueName(name)}/${uid}/${oid}`;
+  return dbWrite(db, cmd, path, value);
+}
+
+/**
+ *
+ * @param {firebase.database.Database} db The firebase database instance.
+ * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+ * @param {string} name
+ * @param {string} uid
+ * @param {*} value
  */
 function writeToUserQueue(db, cmd, permission, name, uid, value) {
   const path = `${permission}/${createQueueName(name)}/${uid}`;
@@ -51,9 +78,42 @@ export default Service.extend({
     return this.get('database');
   },
 
+  getTimestamp() {
+    return firebase.database.ServerValue.TIMESTAMP;
+  },
+
+  /**
+   * Writes a value to a `org-owner-writeable` queue.
+   *
+   * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+   * @param {string} name The name of the queue.
+   * @param {string} uid The user identifier of the active user.
+   * @param {string} oid The organization identifier.
+   * @param {*} value The value to write to the queue.
+   */
+  setToOrgOwnerWriteableQueue(cmd, name, uid, oid, value) {
+    const db = this.get('database');
+    return writeToOrgOwnerQueue(db, cmd, PERMS.ORG_OWNER_WRITEABLE, name, uid, oid, value);
+  },
+
+
+  /**
+   * Writes a value to a `org-writeable` queue.
+   *
+   * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
+   * @param {string} name The name of the queue.
+   * @param {string} uid The user identifier of the active user.
+   * @param {string} oid The organization identifier.
+   * @param {*} value The value to write to the queue.
+   */
+  setToOrgWriteableQueue(cmd, name, uid, oid, value) {
+    const db = this.get('database');
+    return writeToOrgQueue(db, cmd, PERMS.ORG_WRITEABLE, name, uid, oid, value);
+  },
+
   /**
    * Writes a value to a `user-writeable` queue.
-   * 
+   *
    * @param {string} cmd The database write command to execute, e.g. `set` or `update`.
    * @param {string} name The name of the queue.
    * @param {string} uid The user identifier of the active user.
@@ -70,7 +130,7 @@ export default Service.extend({
    * If the value already exists, the promise will be resolved immediately.
    * The listener will be immediately detached (via `.off()`) once the value is retrieved.
    * The promise will be rejected if the listener attachment fails (e.g. no permission to read).
-   * 
+   *
    * @param {string} path The path to wait on.
    * @return {Promise<*>} A promise containing the path's value.
    */
@@ -80,6 +140,29 @@ export default Service.extend({
       const listener = ref.on('value', (snap) => {
         const value = snap.val();
         if (value !== null) {
+          ref.off('value', listener);
+          resolve(value);
+        }
+      }, reject);
+    });
+  },
+
+  /**
+   * Creates a `Promise` that will be resolved once the provided path is gone.
+   * If the value is already gone, the promise will be resolved immediately.
+   * If the value still exists, the promise will not be resolved until it is gone.
+   * The listener will be immediately detached (via `.off()`) once an empty value is retrieved.
+   * The promise will be rejected if the listener attachment fails (e.g. no permission to read).
+   *
+   * @param {string} path The path to wait on.
+   * @return {Promise<*>} A promise containing the path's value.
+   */
+  waitUntilGone(path) {
+    const ref = this.get('database').ref(path);
+    return new Promise((resolve, reject) => {
+      const listener = ref.on('value', (snap) => {
+        const value = snap.val();
+        if (value == null) {
           ref.off('value', listener);
           resolve(value);
         }

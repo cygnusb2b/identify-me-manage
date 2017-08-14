@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const { Component, computed, inject: { service } } = Ember;
+const { Component, computed } = Ember;
 
 export default Component.extend({
   classNames: ['container'],
@@ -9,8 +9,6 @@ export default Component.extend({
   userModel: computed('userManager.user', function() {
     return this.get('userManager.user');
   }),
-
-  orgManager: service(),
 
   organization: {},
 
