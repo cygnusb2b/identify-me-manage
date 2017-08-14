@@ -1,0 +1,21 @@
+{{#if label}}
+<label for="{{ identifier }}">{{ label }}</label>
+{{/if}}
+{{#if (eq control 'input')}}
+  {{input
+    id=identifier
+    class="form-control"
+    type=type
+    value=value
+    disabled=disabled
+    autofocus=autofocus
+    aria-describedby=helpIdentifier
+  }}
+{{/if}}
+{{#if (eq control 'textarea')}}
+  {{textarea id=identifier class="form-control" value=value disabled=disabled aria-describedby=helpIdentifier}}
+{{/if}}
+{{#if helpText}}
+  <small id="{{ helpIdentifier }}" class="form-text text-muted">{{ helpText }}</small>
+{{/if}}
+
