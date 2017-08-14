@@ -1,15 +1,18 @@
 import Ember from 'ember';
 
-const { Component, inject: { service } } = Ember;
+const { Component, inject: { service }, computed } = Ember;
 
 
 export default Component.extend({
+  store: service(),
+  fb: service('firebase-tools'),
+
   isInvalidateModalShown: false,
   activeKey: null,
   isLoading: false,
   error: null,
-  store: service(),
-  fb: service('firebase-tools'),
+
+  hasActiveKey: computed.notEmpty('activeKey'),
 
   actions: {
     createKey() {
@@ -21,6 +24,9 @@ export default Component.extend({
     },
     invalidate() {
       const key = this.get('activeKey');
+      key.set('deletedAt', this.get('fb').getTimestamp());
+      key.deleteRecord();
+
       this.set('isLoading', true);
       key.save()
         .catch((e) => this.set('error', e))
@@ -30,16 +36,8 @@ export default Component.extend({
       ;
     },
 
-    hideInvalidateModal() {
-      this.get('activeKey').rollbackAttributes();
-      this.set('activeKey', null);
-      this.set('isInvalidateModalShown', false);
-    },
-    showInvalidateModal(key) {
+    setActiveKey(key) {
       this.set('activeKey', key);
-      this.set('activeKey.deletedAt', this.get('fb').getTimestamp());
-      this.get('activeKey').deleteRecord();
-      this.set('isInvalidateModalShown', true);
-    }
+    },
   }
 });

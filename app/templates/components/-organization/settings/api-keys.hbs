@@ -12,7 +12,7 @@
         <p><strong>Key</strong>: <code>{{key.id}}</code></p>
       </div>
       <div class="col">
-        {{#-bs/button "danger" click=(action "showInvalidateModal" key) class="btn-sm float-right" disabled=(eq isLoading true)}}
+        {{#-bs/button "danger" click=(action "setActiveKey" key) class="btn-sm float-right" disabled=(eq isLoading true)}}
           {{-ion "ios-trash"}} Invalidate
         {{/-bs/button}}
       </div>
@@ -39,8 +39,8 @@
   </div>
 </div>
 
-{{#-bs/modal show=isInvalidateModalShown as |modal|}}
-  {{modal.header title="Invalidate API key" showClose=true closeAction=(action "hideInvalidateModal")}}
+{{#-bs/modal show=hasActiveKey onHidden=(action "setActiveKey" null) as |modal|}}
+  {{modal.header title="Invalidate API key" showClose=true}}
   {{#modal.body}}
     <div class="row">
       <div class="col">
