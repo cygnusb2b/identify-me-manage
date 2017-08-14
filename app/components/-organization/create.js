@@ -10,8 +10,6 @@ export default Component.extend({
     return this.get('userManager.user');
   }),
 
-  orgManager: service(),
-
   organization: {},
 
   isLoading: false,
