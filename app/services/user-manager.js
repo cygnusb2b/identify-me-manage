@@ -1,5 +1,4 @@
 import Ember from 'ember';
-import RSVP from 'rsvp';
 
 const { Service, inject: { service }, computed, get, RSVP: { Promise } } = Ember;
 
