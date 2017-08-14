@@ -16,6 +16,12 @@ Router.map(function() {
       this.route('settings', { path: '/settings' }, function() {
         this.route('team');
       });
+      this.route('forms', function() {
+        this.route('create');
+      });
+      this.route('fields', function() {
+        this.route('create');
+      });
     });
   }),
 
