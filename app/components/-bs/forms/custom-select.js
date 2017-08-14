@@ -3,7 +3,7 @@ import Ember from 'ember';
 export default Ember.Component.extend({
 
   tagName: 'select',
-  attributeBindings: ['disabled', 'name'],
+  attributeBindings: ['disabled', 'name', 'multiple', 'readonly'],
   classNames: ['custom-select'],
 
   disabled: false,
