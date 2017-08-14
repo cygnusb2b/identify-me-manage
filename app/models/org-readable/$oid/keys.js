@@ -40,7 +40,7 @@ export default Model.extend({
 
   _executeKeyInvalidate(uid, oid) {
     if (this.get('isDeleted')) {
-      const writeTo = this.get('fb').setToOrgOwnerWriteableQueue.bind(this.get('fb'));
+      const writeTo = this.get('fb').setToOrgWriteableOwnerQueue.bind(this.get('fb'));
       const payload = Object.assign({}, this.getProperties('key', 'deletedAt'));
       return Promise.resolve()
         .then(() => writeTo('push', 'api-key-invalidate', uid, oid, payload))
