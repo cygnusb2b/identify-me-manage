@@ -23,16 +23,6 @@ function getOrgWriteableOwnerQueuePath(name) {
   return `/org-writeable-owner/${name}-queue/{uid}/{oid}`;
 }
 
-function filterEmptyValues(object, keys) {
-  const newObj = {};
-  Object.keys(object).forEach((key) => {
-    if (keys.includes(key) && object[key] !== null) {
-      newObj[key] = object[key];
-    }
-  });
-  return newObj
-}
-
 /**
  * Auth User Create
  */
@@ -128,7 +118,7 @@ exports.loginQueue = functions.database.ref(getOwnerWriteableQueuePath('login'))
  */
 exports.orgUpdate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org-update')}/{key}`).onCreate((event) => {
   const oid = event.params.oid;
-  const payload = filterEmptyValues(event.data.val(), ['name', 'photoURL']);
+  const payload = event.data.val();
   return Promise.resolve()
     .then(() => admin.database().ref(`/organizations/${oid}`).update(payload))
     .then(() => event.data.ref.remove())
@@ -141,7 +131,7 @@ exports.orgUpdate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org
  */
 exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpdate((event) => {
   const oid = event.params.oid;
-  const payload = filterEmptyValues(event.data.val(), ['name', 'photoURL']);
+  const payload = event.data.val();
   const uids = [];
 
   return Promise.resolve()
