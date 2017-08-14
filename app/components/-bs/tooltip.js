@@ -1,17 +1,23 @@
 import Ember from 'ember';
 
-const { Component } = Ember;
+const { Component, computed } = Ember;
 
 export default Component.extend({
   tagName: 'span',
+  attributeBindings: ['style'],
   placement: 'top',
   title: '',
   html: false,
   tooltipTrigger: 'hover focus', // Must use `tooltipTrigger` instead of `trigger`, as trigger appears to be reserved.
   offset: '0 0',
-  delay: 0,
+  delay: 100,
   animation: true,
   tooltipContainer: false, // Must use `tooltipContainer` instead of `conainer`, as container appears to be reserved.
+  cursor: 'default',
+
+  style: computed('cursor', function() {
+   return Ember.String.htmlSafe(`cursor: ${this.get('cursor')};`);
+  }),
 
   didInsertElement() {
     this._super(...arguments);
