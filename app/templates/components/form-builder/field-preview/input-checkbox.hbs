@@ -1,0 +1,17 @@
+{{form-builder/field-preview/-label value=field.label required=attributes.required}}
+{{form-builder/field-preview/-help-text value=field.helpText}}
+<div class="custom-controls-stacked">
+  {{#each attributes.options as |option|}}
+    <label class="custom-control custom-checkbox">
+      {{input type="checkbox" class="custom-control-input"
+        name=field.name
+        disabled=attributes.disabled
+        readonly=attributes.readonly
+        required=attributes.required
+        value=option.value
+      }}
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description">{{ option.label }}</span>
+    </label>
+  {{/each}}
+</div>

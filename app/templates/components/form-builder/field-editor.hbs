@@ -1,0 +1,77 @@
+<ul class="nav nav-pills" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#field-general" role="tab">General</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#field-attributes" role="tab">Attributes</a>
+  </li>
+  {{#if control.supports.options}}
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#field-choices" role="tab">Choices</a>
+    </li>
+  {{/if}}
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#field-preview" role="tab">Preview</a>
+  </li>
+</ul>
+<hr>
+<div class="tab-content">
+  <div class="tab-pane active" id="field-general" role="tabpanel">
+    {{#-bs/row}}
+      {{#-bs/col lg=6}}
+        {{-bs/form-group
+          identifier="fieldBuilder.name"
+          label="Name"
+          value=field.name
+          disabled=(eq field.reusable false)
+          helpText="A short name describing this field. Is only used internally and will not appear on any forms."
+        }}
+      {{/-bs/col}}
+      {{#-bs/col lg=6}}
+        {{-bs/form-group
+          identifier="fieldBuilder.label"
+          label="Label"
+          value=field.label
+          helpText="A user-friendly label for this field. The label will appear on the form above the field."
+        }}
+      {{/-bs/col}}
+    {{/-bs/row}}
+    {{#-bs/row}}
+      {{#-bs/col}}
+        {{-bs/form-group class="mb-0"
+          identifier="fieldBuilder.helpText"
+          control="textarea"
+          label="Helper Text"
+          value=field.helpText
+          helpText="Short text that describes the field, or provides instructions to the user."
+        }}
+      {{/-bs/col}}
+    {{/-bs/row}}
+  </div>
+  <div class="tab-pane" id="field-attributes" role="tabpanel">
+    {{#-bs/row}}
+      {{#-bs/col}}
+        {{#if control.supports.placeholder}}
+          {{-bs/form-group
+            identifier="fieldBuilder.placeholder"
+            label="Placeholder"
+            value=field.attributes.placeholder
+            helpText="A hint to the user of what can be entered in the field."
+          }}
+        {{/if}}
+        {{form-builder/field-editor/togglable-attributes control=control attributes=field.attributes}}
+      {{/-bs/col}}
+    {{/-bs/row}}
+  </div>
+  {{#if control.supports.options}}
+    <div class="tab-pane" id="field-choices" role="tabpanel">
+      {{!-- This will likely need to be a different component per field type --}}
+    </div>
+  {{/if}}
+  <div class="tab-pane" id="field-preview" role="tabpanel">
+    {{form-builder/field-preview field=field attributes=field.attributes}}
+  </div>
+</div>
+
+
+

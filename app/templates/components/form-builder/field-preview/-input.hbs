@@ -1,0 +1,17 @@
+{{form-builder/field-preview/-label value=field.label required=attributes.required}}
+{{#if hasBlock}}
+  {{ yield }}
+{{else}}
+  {{input type=type class="form-control"
+    autocomplete=attributes.autocomplete
+    disabled=attributes.disabled
+    maxlength=attributes.maxlength
+    minlength=attributes.minlength
+    pattern=attributes.pattern
+    placeholder=attributes.placeholder
+    readonly=attributes.readonly
+    required=attributes.required
+    title=attributes.title
+  }}
+{{/if}}
+{{form-builder/field-preview/-help-text value=field.helpText}}

@@ -1,0 +1,20 @@
+<div class="row">
+  <div class="col">
+    {{form-builder/field-preview field=field attributes=field.attributes}}
+    <div class="btn-toolbar float-right" role="toolbar" aria-label="Field actions">
+      <div class="btn-group mr-2" role="group" aria-label="Edit group">
+        {{#-bs/button "success" outline=true size="small" click=(action "edit")}}{{-ion "edit"}}{{/-bs/button}}
+      </div>
+      <div class="btn-group mr-2" role="group" aria-label="Movement group">
+        {{#-bs/button "primary" outline=true size="small" disabled=(eq canMoveUp false) click=(action "moveUp")}}{{-ion "arrow-up-b"}}{{/-bs/button}}
+        {{#-bs/button "primary" outline=true size="small" disabled=(eq canMove false)}}{{-ion "arrow-move"}}{{/-bs/button}}
+        {{#-bs/button "primary" outline=true size="small" disabled=(eq canMoveDown false) click=(action "moveDown")}}{{-ion "arrow-down-b"}}{{/-bs/button}}
+      </div>
+
+      <div class="btn-group" role="group" aria-label="Remove group">
+        {{#-bs/button "danger" outline=true size="small" click=(action "remove")}}{{-ion "close-circled"}}{{/-bs/button}}
+      </div>
+    </div>
+  </div>
+</div>
+<hr>
