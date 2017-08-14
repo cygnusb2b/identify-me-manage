@@ -24,12 +24,12 @@ export default Component.extend({
     },
     invalidate() {
       const key = this.get('activeKey');
+      this.set('error', null);
       this.set('isLoading', true);
 
       key.destroyRecord()
+        .then(() => this.set('activeKey', null))
         .catch((e) => this.set('error', e))
-        .finally(() => this.set('activeKey', null))
-        .finally(() => this.set('isInvalidateModalShown', false))
         .finally(() => this.set('isLoading', false))
       ;
     },
