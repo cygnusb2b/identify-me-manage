@@ -1,4 +1,5 @@
 import Model from 'ember-data/model';
+import Ember from 'ember';
 import attr from 'ember-data/attr';
 const { inject: { service }, computed, RSVP: { Promise } } = Ember;
 
