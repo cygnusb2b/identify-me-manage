@@ -146,4 +146,27 @@ export default Service.extend({
       }, reject);
     });
   },
+
+  /**
+   * Creates a `Promise` that will be resolved once the provided path is gone.
+   * If the value is already gone, the promise will be resolved immediately.
+   * If the value still exists, the promise will not be resolved until it is gone.
+   * The listener will be immediately detached (via `.off()`) once an empty value is retrieved.
+   * The promise will be rejected if the listener attachment fails (e.g. no permission to read).
+   *
+   * @param {string} path The path to wait on.
+   * @return {Promise<*>} A promise containing the path's value.
+   */
+  waitUntilGone(path) {
+    const ref = this.get('database').ref(path);
+    return new Promise((resolve, reject) => {
+      const listener = ref.on('value', (snap) => {
+        const value = snap.val();
+        if (value == null) {
+          ref.off('value', listener);
+          resolve(value);
+        }
+      }, reject);
+    });
+  },
 });

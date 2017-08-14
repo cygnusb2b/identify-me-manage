@@ -201,6 +201,29 @@ exports.orgApiKeyInvalidate = functions.database.ref(`${getOrgWriteableOwnerQueu
 });
 
 /**
+ * Org Owner Writeable, Org Delete Queue
+ */
+exports.orgDelete = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org-delete')}/{key}`).onCreate((event) => {
+  const oid = event.params.oid;
+  const refs = {};
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`org-readable/${oid}/users`).once('value'))
+    .then(snap => {
+      snap.forEach(child => {
+        const path = `/owner-readable/user-organizations/${child.key}/organizations/${oid}`;
+        refs[path] = null;
+      })
+    })
+    .then(() => admin.database().ref(`org-readable/${oid}`).remove())
+    .then(() => admin.database().ref(`organizations/${oid}`).remove())
+    .then(() => admin.database().ref().update(refs))
+    .then(() => event.data.adminRef.remove())
+    .catch(error => event.data.adminRef.update({ error }).then(() => Promise.reject(error)))
+  ;
+});
+
+/**
  * Owner Writeable, Org Create Queue
  */
 exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('org-create')}/{oid}`).onCreate((event) => {

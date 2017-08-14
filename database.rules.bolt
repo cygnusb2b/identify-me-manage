@@ -13,6 +13,10 @@ type OrganizationUpdateQueue {
   updatedAt: CurrentTimestamp,
 }
 
+type OrganizationDeleteQueue {
+  key: NonEmptyString,
+}
+
 type OrganizationApiKeyCreateQueue {
   key: NonEmptyString,
   createdAt: CurrentTimestamp,
@@ -81,5 +85,9 @@ path /org-writeable-owner/api-key-invalidate-queue/{uid}/{oid}/{qid} is Organiza
 }
 
 path /org-writeable-owner/org-update-queue/{uid}/{oid}/{qid} is OrganizationUpdateQueue {
+    write() { auth.uid === uid && isOrgOwner(oid) }
+}
+
+path /org-writeable-owner/org-delete-queue/{uid}/{oid}/{qid} is OrganizationDeleteQueue {
     write() { auth.uid === uid && isOrgOwner(oid) }
 }

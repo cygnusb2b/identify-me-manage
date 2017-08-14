@@ -1,0 +1,42 @@
+<div class="card card-outline-danger mt-3">
+  <div class="card-header text-danger">Danger Zone</div>
+  <div class="card-block">
+    <div class="form-group">
+
+      {{#-bs/button "danger" click=(action "showModal") class="mr-1 float-right" disabled=(eq isLoading true)}}
+        Delete
+      {{/-bs/button}}
+      <label>Delete Organization</label>
+      <small id="update.org.name.help" class="form-text text-muted">Deleting an organization will remove the organization and all stored data. This action cannot be reversed.</small>
+    </div>
+  </div>
+</div>
+
+{{#-bs/modal show=isModalShown as |modal|}}
+  {{modal.header title="Delete Organization" showClose=true closeAction=(action "hideModal")}}
+  {{#modal.body}}
+    <div class="row">
+      <div class="col">
+        <p>Please note that deleting this organization will delete any and all data associated with it.</p>
+        <p>Before proceeding, please be sure to review the <a href="#" target="_blank">Terms of Service {{-ion "link"}}</a> regarding account deletion.</p>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col">
+        <div class="form-group">
+          <label for="name">Enter this organization’s name to confirm</label>
+          {{input class="form-control" value=confirmation}}
+        </div>
+        {{#if error}}
+          <div class="alert-danger alert mt-3 mb-0" role="alert"><strong>Oops!</strong> {{error.message}}</div>
+        {{/if}}
+      </div>
+    </div>
+  {{/modal.body}}
+  {{#modal.footer}}
+    {{#-bs/button "danger" click=(action "delete")}}
+      Yup, delete this sucker
+    {{/-bs/button}}
+  {{/modal.footer}}
+{{/-bs/modal}}
