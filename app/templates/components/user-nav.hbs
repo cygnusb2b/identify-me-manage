@@ -7,8 +7,6 @@
     <div class="dropdown-menu dropdown-menu-right">
       {{#link-to "app.settings" class="dropdown-item" title="Settings"}}Settings{{/link-to}}
       <div class="dropdown-divider"></div>
-      <a href="#" class="dropdown-item" title="Logout" {{action "logout"}}>
-        {{-ion "log-out"}} Logout
-      </a>
+      {{#link-to "app.logout" class="dropdown-item" title="Logout"}}{{-ion "log-out"}} Logout{{/link-to}}
     </div>
   </li>
