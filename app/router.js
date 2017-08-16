@@ -11,6 +11,7 @@ Router.map(function() {
     this.route('welcome');
     this.route('setup');
     this.route('settings');
+    this.route('logout');
     this.route('organization-create', { path: '/organization/create'});
     this.route('organization', { path: '/organization/:id' }, function() {
       this.route('settings');

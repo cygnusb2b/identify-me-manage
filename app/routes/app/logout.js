@@ -1,11 +1,10 @@
 import Ember from 'ember';
 
-const { Component } = Ember;
+const { Route } = Ember;
 
-export default Component.extend({
-
+export default Route.extend({
   actions: {
-    logout() {
+    didTransition() {
       this.get('user').signOut();
     },
   },

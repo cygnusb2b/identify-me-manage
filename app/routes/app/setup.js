@@ -8,7 +8,7 @@ export default Route.extend({
       this.transitionTo('app.organization.index', this.get('user.oid'));
     },
     logout() {
-      this.get('user').signOut();
+      this.transitionTo('app.logout');
     }
   },
 });
