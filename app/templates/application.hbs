@@ -11,12 +11,12 @@
   <a href="/" class="navbar-brand">Identify Me</a>
   {{!-- Should only appear once logged in. --}}
 
-  {{#if userManager.canUseApp}}
+  {{#if user.canUseApplication}}
 
-    <div class="collapse navbar-collapse" id="primary-nav"> 
+    <div class="collapse navbar-collapse" id="primary-nav">
       <ul class="navbar-nav mr-auto mt-2 mt-md-0">
         <li class="nav-item">
-          {{#link-to "app.organization.index" orgManager.activeOrgId class="nav-link"}}
+          {{#link-to "app.organization.index" user.oid class="nav-link"}}
             {{!-- {{-ion "pie-graph"}} --}}
              Dashboard
           {{/link-to}}
@@ -27,7 +27,7 @@
         {{org-nav}}
         {{user-nav}}
       </ul>
-  </div> 
+  </div>
   {{/if}}
 {{/-bs/navbar}}
 

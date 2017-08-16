@@ -5,7 +5,7 @@ const { Component, computed } = Ember;
 export default Component.extend({
   isLoading: false,
   error: null,
-  organization: computed.reads('orgManager.activeOrg'),
+  organization: {},
 
   isDisabled: computed('isLoading', 'organization.hasDirtyAttributes', function() {
     return this.get('isLoading') || !this.get('organization.hasDirtyAttributes');

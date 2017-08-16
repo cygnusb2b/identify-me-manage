@@ -1,10 +1,10 @@
 {{#-bs/row class="justify-content-center"}}
   {{#-bs/col sm=12 md=10 lg=8}}
     <h2>
-      <img src="{{userManager.currentUser.photoURL}}" class="icon icon-lg mr-4" alt="avatar">
-      {{userManager.currentUser.firstName}} {{userManager.currentUser.lastName}}
+      <img src="{{user.model.photoURL}}" class="icon icon-lg mr-4" alt="avatar">
+      {{user.model.firstName}} {{user.model.lastName}}
     </h2>
-    
+
   {{/-bs/col}}
 {{/-bs/row}}
 <hr>

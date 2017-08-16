@@ -8,9 +8,9 @@
         </button>
       </div>
       <div class="card-block">
-        {{#if session.currentUser.emailVerified}}
+        {{#if user.isVerified}}
           {{#if hasCompletedStep2}}
-            {{setup-wizard/create-account
+            {{setup-wizard/create-organization
               stepNumber=3
               totalSteps=3
               on-wizard-complete=on-wizard-complete
@@ -26,7 +26,6 @@
           {{setup-wizard/confirm-email
             stepNumber=1
             totalSteps=3
-            currentUser=session.currentUser
           }}
         {{/if}}
       </div>
