@@ -6,7 +6,7 @@ export default Component.extend({
 
   actions: {
     logout() {
-      this.get('userManager').signOutCurrentUser();
+      this.get('user').signOut();
     },
   },
 });

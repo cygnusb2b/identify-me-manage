@@ -1,17 +1,8 @@
 import Ember from 'ember';
 
-const { Component, computed, inject: { service } } = Ember;
+const { Component } = Ember;
 
 export default Component.extend({
-  classNames: ['container'],
-  session: null,
-
-  userModel: computed('userManager.user', function() {
-    return this.get('userManager.user');
-  }),
-
-  orgManager: service(),
-
   organization: {},
 
   isLoading: false,
@@ -22,7 +13,7 @@ export default Component.extend({
       this.set('isLoading', true);
       this.set('error', null);
 
-      this.get('orgManager').createNewOrg(this.get('organization'))
+      this.get('organization').save()
         .then(oid => this.sendAction('onComplete', oid))
         .catch(error => this.set('error', error))
         .finally(() => this.set('isLoading', false))

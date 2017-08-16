@@ -1,16 +1,16 @@
   <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)" role="button">
-      <img src="{{orgManager.activeOrg.photoURL}}" class="icon icon-sm mr-1">
-      {{orgManager.activeOrg.name}}
+      <img src="{{user.activeOrganization.photoURL}}" class="icon icon-sm mr-1">
+      {{user.activeOrganization.name}}
       </a>
 
     <div class="dropdown-menu dropdown-menu-right">
-      {{#if orgManager.canManageOrg}}
-        {{#link-to "app.organization.settings" orgManager.activeOrgId title="Manage" class="dropdown-item"}}
+      {{#if user.canManageOrganization}}
+        {{#link-to "app.organization.settings" user.oid title="Manage" class="dropdown-item"}}
           {{-ion "ios-gear"}} Manage Organization
         {{/link-to}}
       {{/if}}
-      {{#link-to "app.organization.team" orgManager.activeOrgId title="Manage" class="dropdown-item"}}
+      {{#link-to "app.organization.team" user.oid title="Manage" class="dropdown-item"}}
         {{-ion "ios-people"}} View Team
       {{/link-to}}
       <div class="dropdown-divider"></div>
@@ -21,7 +21,7 @@
 
       <div class="dropdown-divider"></div>
 
-      {{#each orgManager.availableOrgs as |org|}}
+      {{#each user.organizations as |org|}}
          {{#link-to "app.organization.index" org.id class="dropdown-item"}}
           <img src="{{org.photoURL}}" class="icon icon-sm mr-1">
           {{org.name}}

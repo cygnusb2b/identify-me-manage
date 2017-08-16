@@ -1,11 +1,11 @@
 {{setup-wizard/step current=stepNumber total=totalSteps title="Create your user profile."}}
 <div class="form-group">
   <label for="setup.profile.firstName">First Name</label>
-  {{input id="setup.profile.firstName" class="form-control" type="text" value=userModel.firstName disabled=isLoading}}
+  {{input id="setup.profile.firstName" class="form-control" type="text" value=user.model.firstName disabled=isLoading}}
 </div>
 <div class="form-group">
   <label for="setup.profile.lastName">Last Name</label>
-  {{input id="setup.profile.lastName" class="form-control" type="text" value=userModel.lastName disabled=isLoading}}
+  {{input id="setup.profile.lastName" class="form-control" type="text" value=user.model.lastName disabled=isLoading}}
 </div>
 {{#-bs/button "primary" click=(action "updateProfile") disabled=(eq isLoading true)}}
   Next >

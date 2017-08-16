@@ -5,7 +5,7 @@ const { Route } = Ember;
 export default Route.extend({
   actions: {
     transitionToOrg() {
-      const oid = this.get('orgManager.activeOrg.id');
+      const oid = this.get('user.oid');
       if (oid) {
         this.transitionTo('app.organization.index', oid);
       } else {

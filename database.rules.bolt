@@ -1,20 +1,54 @@
 initial(value, init) { value == (prior(value) == null ? init : prior(value)) }
 
-type Organization {
-  name: NonEmptyString,
-  photoURL: NonEmptyString,
-  createdAt: InitialTimestamp,
-  updatedAt: CurrentTimestamp
+type User {
+  firstName: NonEmptyString | Null, // can
+  lastName: NonEmptyString | Null, // can
+  email: InitialString, // User can't change
+  // verificationSent: InitialFalse | InitialTimestamp, // User can't change
+  photoURL: NonEmptyString | Null, // can
+  createdAt: InitialTimestamp, // can't
+  updatedAt: InitialTimestamp, // can't
+  activeOrgId: NonEmptyString | Null,
+  // lastLogin: InitialFalse | InitialTimestamp, // can't
+  // loginCount: InitialNumber,
 }
 
-type OrganizationUpdateQueue {
+type NewOrganization {
   name: NonEmptyString,
-  photoURL: NonEmptyString,
-  updatedAt: CurrentTimestamp,
+}
+
+type Organization {
+  name: NonEmptyString,
+  photoURL: NonEmptyString | Null,
+  createdAt: InitialTimestamp,
+  updatedAt: InitialTimestamp,
+}
+
+type OrganizationUser {
+  email: InitialString,
+  firstName: InitialString,
+  lastName: InitialString,
+  role: EnumValidRoles,
+}
+
+type InitialString extends String {
+  validate() { initial(this, this) }
+}
+
+type EnumValidRoles extends String {
+  validate() { this == 'Member' || this == 'Restricted' || this == 'Owner' }
 }
 
 type NonEmptyString extends String {
-  validate() { this.length > 1 }
+  validate() { this.length > 0 }
+}
+
+type InitialFalse extends Boolean {
+  validate() { initial(this, false) }
+}
+
+type InitialNumber extends Number {
+  validate() { initial(this, 0) }
 }
 
 type CurrentTimestamp extends Number {
@@ -25,46 +59,150 @@ type InitialTimestamp extends Number {
   validate() { initial(this, now) }
 }
 
+/**
+ * Determines if the current user owns the applicable resource.
+ */
+isOwner(uid) { auth.uid === uid }
+/**
+ * Determines if the current user has a verified email address.
+ */
 isEmailVerified() { auth.token.email_verified === true }
-isOrgMember(oid) { isEmailVerified() && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid]) != null }
-isOrgOwner(oid) { isEmailVerified() && prior(root['owner-readable']['user-organizations'][auth.uid].organizations[oid].role) === "Owner" }
+/**
+ * Determines if the current user is verified and owns the applicable resource.
+ */
+isVerifiedOwner(uid) { isOwner(uid) && isEmailVerified() }
 
-path / {
-  read() { false }
-  write() { false }
+/**
+ * Determines if the current user has joined the provided organization ID, regardless of role.
+ */
+isOrgUser(oid) { isOrgOwner(oid) || isOrgMember(oid) || isOrgRestricted(oid) }
+
+/**
+ * Determines if the current user has the provided role for the provided organization.
+ */
+hasOrgRole(oid, role) {
+  isEmailVerified() &&
+  prior(root['models']['organization-users'][oid][auth.uid].role) === role
 }
 
-path /readable {
-  read() { auth !== null }
+/**
+ * Determines if the current user is a restricted user of the organization.
+ */
+isOrgRestricted(oid) { hasOrgRole(oid, "Restricted") }
+
+/**
+ * Determines if the current user is a member ("standard user") of the organization.
+ */
+isOrgMember(oid) { hasOrgRole(oid, "Member") }
+
+/**
+ * Determines if the current user is the owner of the organization.
+ */
+isOrgOwner(oid) { hasOrgRole(oid, "Owner") }
+
+/*
+  Model: User
+  The primary user object.
+
+  Client-Side Permissions
+  - Read: If is owned by current user.
+  - Write: If is owned by current user.
+
+  Server Functions
+    Created By
+      Auth: onAuthUserCreate
+    Deleted By
+      Auth: onAuthUserDelete
+    Updates
+      `/models/organization-users/${oid}/${uid}` via `onUserUpdate`
+ */
+path /models/users/{uid} is User {
+  read() { isOwner(uid) }
+  write() { isOwner(uid) }
 }
 
-// @todo Each type should be defined here, not wildcarded with $type
-//       This ensures that random data cannot be written here.
-path /writeable {
-  write() { auth !== null }
+/*
+  Model: Organization
+
+  Client-Side Permissions
+  - Read: If the current user is an org user.
+  - Write: If the current user is an org user.
+
+  Server Functions
+    Created By
+      `/actions/create-organization/{uid}/{oid}` from `actionCreateOrganization`
+    Updates
+      `/models/user-organizations/${uid}/${oid}` via `onOrganizationUpdate`
+ */
+path /models/organizations/{oid} is Organization {
+  read() { isOrgUser(oid) }
+  write() { isOrgOwner(oid) }
 }
 
-path /owner-readable/{type}/{uid} {
-  read() { auth.uid === uid }
+/*
+  Model: User Organization
+  Lists all organizations assigned to a user
+
+  Client-Side Permissions
+  - Read: If is owned by current user.
+  - Write: None
+
+  Server Functions
+    Created By
+      `/models/organization-users/{oid}/{uid}` from `onOrganizationUsersCreate`
+    Updated By
+      `/models/organizations/{oid}` from `onOrganizationUpdate`
+ */
+path /models/user-organizations/{uid} {
+  read() { isOwner(uid) }
 }
 
-// @todo Each type should be defined here, not wildcarded with $type
-//       This ensures that random data cannot be written here.
-path /owner-writeable/{type}/{uid} {
-  write() { auth.uid === uid }
+/*
+  Model: Organization User
+  Lists all users assigned to an organization
+
+  Client-Side Permissions
+  - Read: If the current user is an org user.
+  - Write: If the current user is an org owner.
+
+  Server Functions
+    Created By
+      `/actions/create-organization/{uid}/{oid}` from `actionCreateOrganization`
+    Creates
+      `/models/organizations/{oid}` via `onOrganizationUsersCreate`
+    Updated By
+      `/models/users/{uid}` from `onUserUpdate`
+ */
+path /models/organization-users/{oid}/{uid} {
+  read() { isOrgUser(oid) }
+  write() { isOrgOwner(oid) }
 }
 
-path /org-readable/{oid} {
-  read() { isOrgMember(oid) }
+/*
+  Action: Notify User Login
+
+  Client-Side Permissions
+  - Read: None.
+  - Write: If the current user is the verified owner.
+
+  Curretly not active.
+ */
+path /actions/notify-login/{uid} {
+  write() { isVerifiedOwner(uid) }
 }
 
-path /org-readable-owner/{oid} {
-  read() { isOrgOwner(oid) }
-}
+/*
+  Action: Create Organization
 
-path /org-writeable/{type}/{uid}/{oid} {
-  write() { auth.uid === uid && isOrgMember(oid) }
-}
-path /org-writeable-owner/org-update-queue/{uid}/{oid}/{qid} is OrganizationUpdateQueue {
-    write() { auth.uid === uid && isOrgOwner(oid) }
+  Client-Side Permissions
+  - Read: None.
+  - Write: If the current user is the verified owner.
+
+  Server Functions
+    Creates
+      `/models/organizations/{oid}` via `actionCreateOrganization`
+      `/models/organization-users/{oid}/{uid` via `actionCreateOrganization`
+ */
+path /actions/create-organization/{uid}/{oid} is NewOrganization {
+  write() { isVerifiedOwner(uid) }
 }

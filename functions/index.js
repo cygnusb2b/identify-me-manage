@@ -3,30 +3,63 @@ const admin = require('firebase-admin');
 const crypto = require('crypto');
 admin.initializeApp(functions.config().firebase);
 
+/**
+ * Gets the current server value timestamp "identifier."
+ *
+ * @return {admin.database.ServerValue.TIMESTAMP}
+ */
 function getNowTimestamp() {
   return admin.database.ServerValue.TIMESTAMP;
 }
 
-function getOwnerReadableUsersRef(uid) {
-  return admin.database().ref(`/owner-readable/users/${uid}`);
+/**
+ * Returns a Promise containing all organization IDs that are currently assigned
+ * to the requested user id.
+ *
+ * @param {string} uid The user id.
+ * @return {Promise<String[]>}
+ */
+function findAllOrgIdsForUser(uid) {
+  const oids = [];
+  return Promise.resolve()
+    .then(() => admin.database().ref(`/models/user-organizations/${uid}`).once('value'))
+    .then((snap) => {
+      snap.forEach((child) => {
+        // Must not return a truthy value from the `forEach`, otherwise further enumeration/looping will be canceled.
+        // @see {@link https://firebase.google.com/docs/reference/functions/functions.database.DeltaSnapshot#forEach}
+        oids.push(child.key);
+      });
+      return oids;
+    })
+  ;
 }
 
-function getOwnerWriteableQueuePath(name) {
-  return `/owner-writeable/${name}-queue/{uid}`;
-}
-
-function getOrgWriteableQueuePath(name) {
-  return `/org-writeable/${name}-queue/{uid}/{oid}`;
-}
-
-function getOrgWriteableOwnerQueuePath(name) {
-  return `/org-writeable-owner/${name}-queue/{uid}/{oid}`;
+/**
+ * Returns a Promise containing all users IDs that are currently assigned
+ * to the requested organization id.
+ *
+ * @param {string} oid The organization id.
+ * @return {Promise<String[]>}
+ */
+function findAllUserIdsForOrg(oid) {
+  const uids = [];
+  return Promise.resolve()
+    .then(() => admin.database().ref(`/models/organization-users/${oid}`).once('value'))
+    .then((snap) => {
+      snap.forEach((child) => {
+        // Must not return a truthy value from the `forEach`, otherwise further enumeration/looping will be canceled.
+        // @see {@link https://firebase.google.com/docs/reference/functions/functions.database.DeltaSnapshot#forEach}
+        uids.push(child.key);
+      });
+      return uids;
+    })
+  ;
 }
 
 /**
  * Auth User Create
  */
-exports.createUser = functions.auth.user().onCreate((event) => {
+exports.onAuthUserCreate = functions.auth.user().onCreate((event) => {
   const data = event.data;
   const now = getNowTimestamp();
 
@@ -35,115 +68,106 @@ exports.createUser = functions.auth.user().onCreate((event) => {
   const user = {
     email: data.email,
     displayName: data.displayName || null,
-    verificationSent: false,
+    // verificationSent: false,
     photoURL: data.photoURL || `https://www.gravatar.com/avatar/${hash}`,
     createdAt: now,
     updatedAt: now,
+    // lastLogin: false,
+    // loginCount: 0,
   };
   return Promise.resolve()
-    .then(() => getOwnerReadableUsersRef(data.uid).update(user))
+    .then(() => admin.database().ref(`/models/users/${data.uid}`).update(user))
   ;
 });
 
 /**
  * Auth User Delete
  */
-exports.deleteUser = functions.auth.user().onDelete((event) => {
+exports.onAuthUserDelete = functions.auth.user().onDelete((event) => {
   const uid = event.data.uid;
-  return getOwnerReadableUsersRef(uid).remove();
+  return admin.database().ref(`/models/users/${uid}`).remove();
 });
 
 /**
- * Email Verification Sent Queue
+ * Action: Create New Organization
  */
-const verificationSentQueueFunc = (event) => {
+exports.actionCreateOrganization = functions.database.ref('/actions/create-organization/{uid}/{oid}').onCreate((event) => {
+  const now = getNowTimestamp();
   const uid = event.params.uid;
-  const sent = event.data.val();
-  if (!sent) {
-    return;
-  }
-  return Promise.resolve()
-    .then(() => getOwnerReadableUsersRef(uid).update({ verificationSent: (new Date()).valueOf() }))
-    .then(() => event.data.ref.remove())
-    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
-  ;
-};
-exports.verificationSentQueueCreate = functions.database.ref(getOwnerWriteableQueuePath('verification-sent')).onCreate(verificationSentQueueFunc);
-exports.verificationSentQueueUpdate = functions.database.ref(getOwnerWriteableQueuePath('verification-sent')).onUpdate(verificationSentQueueFunc);
+  const oid = event.params.oid;
 
-/**
- * Owner Writeable, User Profile Queue
- */
-const userProfileQueueFunc = (event) => {
-  const uid = event.params.uid;
-  const profile = event.data.val();
-  if (!profile || typeof profile !== 'object') {
-    return;
-  }
-  const user = {
-    firstName: profile.firstName || null,
-    lastName: profile.lastName || null,
-    photoURL: profile.photoURL || null,
-    updatedAt: getNowTimestamp(),
+  const payload = event.data.val();
+  const org = {
+    name: payload.name,
+    photoURL: `https://robohash.org/${oid}?set=set3&bgset=bg2`,
+    createdAt: now,
+    updatedAt: now,
   };
-
   return Promise.resolve()
-    .then(() => getOwnerReadableUsersRef(uid).update(user))
-    .then(() => event.data.ref.remove())
-    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
-  ;
-};
-exports.userProfileQueueCreate = functions.database.ref(getOwnerWriteableQueuePath('user-profile')).onCreate(userProfileQueueFunc);
-exports.userProfileQueueUpdate = functions.database.ref(getOwnerWriteableQueuePath('user-profile')).onUpdate(userProfileQueueFunc);
-
-/**
- * Owner Writeable, Login Queue
- */
-exports.loginQueue = functions.database.ref(getOwnerWriteableQueuePath('login')).onCreate((event) => {
-  const uid = event.params.uid;
-  const user = {
-    lastLogin: (new Date()).valueOf(),
-  };
-
-  return Promise.resolve()
-    .then(() => getOwnerReadableUsersRef(uid).update(user))
-    .then(() => event.data.ref.remove())
-    .then(() => user)
+    .then(() => admin.database().ref(`/models/organizations/${oid}`).set(org)) // Create the org.
+    .then(() => admin.database().ref(`/models/users/${uid}`).once('value')) // Retrieve the current user.
+    .then((snap) => {
+      const user = snap.val();
+      const path = `/models/organization-users/${oid}/${uid}`;
+      // Set the current user (who executed the creation) as the owner of the organization.
+      return admin.database().ref(path).set({
+        email: user.email || null,
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        photoURL: user.photoURL || null,
+        role: 'Owner',
+      });
+    })
+    .then(() => event.data.ref.remove()) // Remove the action node.
     .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
   ;
 });
 
 /**
- * Org Writeable, Org Update Queue
+ * Listener: On Organization User Create
  */
-exports.orgUpdate = functions.database.ref(`${getOrgWriteableOwnerQueuePath('org-update')}/{key}`).onCreate((event) => {
+exports.onOrganizationUsersCreate = functions.database.ref('/models/organization-users/{oid}/{uid}').onCreate((event) => {
+  const uid = event.params.uid;
+  const oid = event.params.oid;
+
+  const user = event.data.val();
+
+  return Promise.resolve()
+    .then(() => admin.database().ref(`/models/organizations/${oid}`).once('value')) // Retrieve the org.
+    .then((snap) => {
+      const org = snap.val();
+      const path = `/models/user-organizations/${uid}/${oid}`;
+      // Now that the user is a member of the org, set the organization to the user's list of orgs.
+      return admin.database().ref(path).set({
+        name: org.name,
+        photoURL: org.photoURL,
+        role: user.role || 'Restricted',
+      });
+    });
+  ;
+});
+
+/**
+ * Listener: On Organization Update
+ */
+exports.onOrganizationUpdate = functions.database.ref(`/models/organizations/{oid}`).onUpdate((event) => {
   const oid = event.params.oid;
   const payload = event.data.val();
-  return Promise.resolve()
-    .then(() => admin.database().ref(`/organizations/${oid}`).update(payload))
-    .then(() => event.data.ref.remove())
-    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
-  ;
-});
 
-/**
- * Updates org memberships from org updates
- */
-exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpdate((event) => {
-  const oid = event.params.oid;
-  const payload = event.data.val();
-  const uids = [];
+  // @todo Update updatedAt. Be careful not to cause an infinite loop!
 
   return Promise.resolve()
-    .then(() => admin.database().ref(`org-readable/${oid}/users`).once('value'))
-    .then(snap => snap.forEach(child => uids.push(child.key)))
-    .then(() => {
+    .then(() => findAllUserIdsForOrg(oid))
+    .then((uids) => {
       const refs = {};
       uids.forEach((uid) => {
-        Object.keys(payload).forEach(key => {
-          const path = `/owner-readable/user-organizations/${uid}/organizations/${oid}/${key}`;
-          refs[path] = payload[key];
-        })
+        ['name', 'photoURL'].forEach(key => {
+          // Only send the update if the data has actually changed.
+          if (event.data.child(key).changed()) {
+            const path = `/models/user-organizations/${uid}/${oid}/${key}`;
+            refs[path] = payload[key];
+          }
+        });
       });
       if (refs.length !== 0) {
         return admin.database().ref().update(refs);
@@ -153,74 +177,31 @@ exports.orgUpdateMembers = functions.database.ref(`/organizations/{oid}`).onUpda
 });
 
 /**
- * Owner Writeable, Org Create Queue
+ * Listener: On User Update
  */
-exports.userOrgCreate = functions.database.ref(`${getOwnerWriteableQueuePath('org-create')}/{oid}`).onCreate((event) => {
-  const now = getNowTimestamp();
+exports.onUserUpdate = functions.database.ref(`/models/users/{uid}`).onUpdate((event) => {
   const uid = event.params.uid;
-  const oid = event.params.oid;
-
   const payload = event.data.val();
-  const org = {
-    name: payload.name || null,
-    photoURL: `https://robohash.org/${oid}?set=set3&bgset=bg2`,
-    createdAt: now,
-    updatedAt: now,
-  };
+
+  // @todo Update updatedAt. Be careful not to cause an infinite loop!
+
   return Promise.resolve()
-    .then(() => admin.database().ref(`organizations/${oid}`).set(org))
-    .then(() => {
-      const path = `owner-readable/user-organizations/${uid}/organizations/${oid}`;
-      return admin.database().ref(path).set({
-        name: org.name,
-        photoURL: org.photoURL,
-        role: 'Owner',
+    // Find all organizations currently assigned to this user
+    .then(() => findAllOrgIdsForUser(uid))
+    .then((oids) => {
+      const refs = {};
+      oids.forEach((oid) => {
+        ['firstName', 'lastName', 'photoURL', 'email'].forEach(key => {
+          // Only send the update if the data has actually changed.
+          if (event.data.child(key).changed()) {
+            const path = `/models/organization-users/${oid}/${uid}/${key}`;
+            refs[path] = payload[key];
+          }
+        });
       });
-    })
-    .then(() => event.data.ref.remove())
-    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
-  ;
-});
-
-/**
- * Owner Writeable, Active Org Queue
- */
-exports.ownerWriteableActiveOrgCreate = functions.database.ref(getOwnerWriteableQueuePath('active-org')).onCreate((event) => {
-  const uid = event.params.uid;
-  const oid = event.data.val();
-
-  const path = `owner-readable/user-organizations/${uid}/activeOrgId`;
-  return Promise.resolve()
-    .then(() => admin.database().ref(path).set(oid))
-    .then(() => event.data.ref.remove())
-    .catch(error => event.data.ref.update({ error }).then(() => Promise.reject(error)))
-  ;
-});
-
-/**
- * Owner Readable, User Org Create
- */
-exports.ownerReadableUserOrgCreate = functions.database.ref('owner-readable/user-organizations/{uid}/organizations/{oid}').onCreate((event) => {
-  const uid = event.params.uid;
-  const oid = event.params.oid;
-  const payload = event.data.val();
-
-  const data = {
-    role: payload.role || 'Restricted',
-  };
-
-  return Promise.resolve()
-    .then(() => getOwnerReadableUsersRef(uid).once('value'))
-    .then(userSnap => {
-      const user = userSnap.val();
-      if (typeof user === 'object') {
-        data.email = user.email || null;
-        data.firstName = user.firstName || null;
-        data.lastName = user.lastName || null;
-        data.photoURL = user.photoURL || null;
-        return admin.database().ref(`org-readable/${oid}/users/${uid}`).set(data);
+      if (refs.length !== 0) {
+        return admin.database().ref().update(refs);
       }
-
     })
   ;
 });

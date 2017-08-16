@@ -18,3 +18,4 @@ testem.log
 .DS_Store
 
 /database.rules.json
+firebase-debug.log
