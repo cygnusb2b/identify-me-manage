@@ -14,6 +14,13 @@ bower_components
 /coverage/*
 /libpeerconnection.log
 npm-debug.log*
+yarn-error.log
 testem.log
-.DS_Store
 
+# ember-try
+.node_modules.ember-try/
+bower.json.ember-try
+/database.rules.json
+package.json.ember-try
+firebase-debug.log
+.DS_Store

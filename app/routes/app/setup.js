@@ -5,10 +5,10 @@ const { Route } = Ember;
 export default Route.extend({
   actions: {
     transitionToOrg() {
-      this.transitionTo('app.organization.index', this.get('orgManager.activeOrg.id'));
+      this.transitionTo('app.organization.index', this.get('user.oid'));
     },
     logout() {
-      this.get('userManager').signOutCurrentUser();
+      this.transitionTo('app.logout');
     }
   },
 });

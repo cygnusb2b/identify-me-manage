@@ -20,7 +20,7 @@ export default Component.extend({
       this.set('error', null);
       this.set('isLoading', true);
 
-      this.get('userManager').createNewUser(this.get('email'), this.get('password'))
+      this.get('user').create(this.get('email'), this.get('password'))
         .then(() => this.sendAction('onComplete'))
         .catch(error => this.set('error', error))
         .finally(() => this.set('isLoading', false))

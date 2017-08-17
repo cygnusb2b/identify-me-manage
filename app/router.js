@@ -11,11 +11,11 @@ Router.map(function() {
     this.route('welcome');
     this.route('setup');
     this.route('settings');
-    this.route('organization-create', { path: '/organization/new'});
+    this.route('logout');
+    this.route('organization-create', { path: '/organization/create'});
     this.route('organization', { path: '/organization/:id' }, function() {
-      this.route('settings', { path: '/settings' }, function() {
-        this.route('team');
-      });
+      this.route('settings');
+      this.route('team');
       this.route('forms', function() {
         this.route('create');
       });

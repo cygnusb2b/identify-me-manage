@@ -1,28 +1,31 @@
   <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)" role="button">
-      <img src="{{orgManager.activeOrg.photoURL}}" class="icon icon-sm mr-1">
-      {{orgManager.activeOrg.name}}
+      <img src="{{user.activeOrganization.photoURL}}" class="icon icon-sm mr-1">
+      {{user.activeOrganization.name}}
       </a>
 
     <div class="dropdown-menu dropdown-menu-right">
-      {{#if orgManager.canManageOrg}}
-        {{#link-to 'app.organization.settings.index' orgManager.activeOrgId title='Manage' class='dropdown-item'}}
-          {{-ion 'ios-gear'}} Manage Organization
+      {{#if user.canManageOrganization}}
+        {{#link-to "app.organization.settings" user.oid title="Manage" class="dropdown-item"}}
+          {{-ion "ios-gear"}} Manage Organization
         {{/link-to}}
-        <div class="dropdown-divider"></div>
       {{/if}}
+      {{#link-to "app.organization.team" user.oid title="Manage" class="dropdown-item"}}
+        {{-ion "ios-people"}} View Team
+      {{/link-to}}
+      <div class="dropdown-divider"></div>
 
-      {{#link-to 'app.organization-create' title='New' class='dropdown-item'}}
-        {{-ion 'plus'}} New Organization
+      {{#link-to "app.organization-create" title="New" class="dropdown-item"}}
+        {{-ion "plus"}} New Organization
       {{/link-to}}
 
       <div class="dropdown-divider"></div>
-      
-      {{#each orgManager.availableOrgs as |org|}}
-         {{#link-to 'app.organization.index' org.id class='dropdown-item'}} 
+
+      {{#each user.organizations as |org|}}
+         {{#link-to "app.organization.index" org.id class="dropdown-item"}}
           <img src="{{org.photoURL}}" class="icon icon-sm mr-1">
           {{org.name}}
-         {{/link-to}} 
+         {{/link-to}}
       {{/each}}
     </div>
   </li>
