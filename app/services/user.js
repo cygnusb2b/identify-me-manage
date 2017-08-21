@@ -32,9 +32,17 @@ export default Service.extend({
   /**
    * The active user organization id.
    *
+   * @deprecated Use `tid` instead.
    * @type {?string}
    */
-  oid: computed.reads('activeOrganization.id'),
+  oid: computed.reads('tid'),
+
+  /**
+   * The active user tenant id.
+   *
+   * @type {?string}
+   */
+  tid: computed.reads('activeOrganization.id'),
 
   /**
    * The Firebase Auth object, or `null` if not authenticated.
