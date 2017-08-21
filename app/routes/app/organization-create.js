@@ -4,7 +4,7 @@ const { Route } = Ember;
 
 export default Route.extend({
   model() {
-    return this.store.createRecord('actions/create-organization/$uid');
+    return this.store.createRecord('user/$uid/actions/create-tenant');
   },
   actions: {
     transitionToOrg(orgId) {

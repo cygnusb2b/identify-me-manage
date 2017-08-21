@@ -32,9 +32,17 @@ export default Service.extend({
   /**
    * The active user organization id.
    *
+   * @deprecated Use `tid` instead.
    * @type {?string}
    */
-  oid: computed.reads('activeOrganization.id'),
+  oid: computed.reads('tid'),
+
+  /**
+   * The active user tenant id.
+   *
+   * @type {?string}
+   */
+  tid: computed.reads('activeOrganization.id'),
 
   /**
    * The Firebase Auth object, or `null` if not authenticated.
@@ -159,7 +167,7 @@ export default Service.extend({
     return Promise.resolve()
       .then(() => validate())
       .then(() => this.get('fb.auth').createUserWithEmailAndPassword(email, password))
-      .then(auth => this.get('fb').waitUntilExists(`models/users/${auth.uid}`))
+      .then(auth => this.get('fb').waitUntilExists(`app/users/${auth.uid}`))
       .then(() => this.initialize())
       .then(() => this.sendEmailVerification())
     ;
@@ -313,7 +321,7 @@ export default Service.extend({
    * @private
    */
   retrieveUserOrgs() {
-    return this.get('store').findAll('user-organizations/$uid');
+    return this.get('store').findAll('user/$uid/tenant');
   },
 
   /**
@@ -322,6 +330,6 @@ export default Service.extend({
    * @return {Promise<Model>}
    */
   retrieveUserModel(uid) {
-    return this.get('store').findRecord('users', uid);
+    return this.get('store').findRecord('app/user', uid);
   },
 });

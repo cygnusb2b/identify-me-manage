@@ -4,7 +4,7 @@ const { Route } = Ember;
 
 export default Route.extend({
   model(params) {
-    return this.store.findRecord('organizations', params.id);
+    return this.store.findRecord('app/tenant', params.id);
   },
 
   afterModel(resolved) {

@@ -13,22 +13,17 @@ type User {
   // loginCount: InitialNumber,
 }
 
-type NewOrganization {
+
+
+type NewTenant {
   name: NonEmptyString,
 }
 
-type Organization {
+type Tenant {
   name: NonEmptyString,
   photoURL: NonEmptyString | Null,
   createdAt: InitialTimestamp,
-  updatedAt: InitialTimestamp,
-}
-
-type OrganizationUser {
-  email: InitialString,
-  firstName: InitialString,
-  lastName: InitialString,
-  role: EnumValidRoles,
+  updatedAt: CurrentTimestamp,
 }
 
 type InitialString extends String {
@@ -73,136 +68,77 @@ isEmailVerified() { auth.token.email_verified === true }
 isVerifiedOwner(uid) { isOwner(uid) && isEmailVerified() }
 
 /**
- * Determines if the current user has joined the provided organization ID, regardless of role.
+ * Determines if the current user has joined the provided tenant ID, regardless of role.
  */
-isOrgUser(oid) { isOrgOwner(oid) || isOrgMember(oid) || isOrgRestricted(oid) }
+isTenantUser(tid) { isTenantOwner(tid) || isTenantMember(tid) || isTenantRestricted(tid) }
 
 /**
- * Determines if the current user has the provided role for the provided organization.
+ * Determines if the current user has the provided role for the provided tenant.
  */
-hasOrgRole(oid, role) {
+hasTenantRole(tid, role) {
   isEmailVerified() &&
-  prior(root['models']['organization-users'][oid][auth.uid].role) === role
+  prior(root['tenant'][tid]['users'][auth.uid].role) === role
 }
 
 /**
- * Determines if the current user is a restricted user of the organization.
+ * Determines if the current user is a restricted user of the tenant.
  */
-isOrgRestricted(oid) { hasOrgRole(oid, "Restricted") }
+isTenantRestricted(tid) { hasTenantRole(tid, "Restricted") }
 
 /**
- * Determines if the current user is a member ("standard user") of the organization.
+ * Determines if the current user is a member ("standard user") of the tenant.
  */
-isOrgMember(oid) { hasOrgRole(oid, "Member") }
+isTenantMember(tid) { hasTenantRole(tid, "Member") }
 
 /**
- * Determines if the current user is the owner of the organization.
+ * Determines if the current user is the owner of the tenant.
  */
-isOrgOwner(oid) { hasOrgRole(oid, "Owner") }
+isTenantOwner(tid) { hasTenantRole(tid, "Owner") }
 
 /*
   Model: User
   The primary user object.
-
-  Client-Side Permissions
-  - Read: If is owned by current user.
-  - Write: If is owned by current user.
-
-  Server Functions
-    Created By
-      Auth: onAuthUserCreate
-    Deleted By
-      Auth: onAuthUserDelete
-    Updates
-      `/models/organization-users/${oid}/${uid}` via `onUserUpdate`
  */
-path /models/users/{uid} is User {
+path /app/users/{uid} is User {
   read() { isOwner(uid) }
   write() { isOwner(uid) }
 }
 
 /*
-  Model: Organization
-
-  Client-Side Permissions
-  - Read: If the current user is an org user.
-  - Write: If the current user is an org user.
-
-  Server Functions
-    Created By
-      `/actions/create-organization/{uid}/{oid}` from `actionCreateOrganization`
-    Updates
-      `/models/user-organizations/${uid}/${oid}` via `onOrganizationUpdate`
+  Model: Tenant
  */
-path /models/organizations/{oid} is Organization {
-  read() { isOrgUser(oid) }
-  write() { isOrgOwner(oid) }
+path /app/tenants/{tid} is Tenant {
+  read() { isTenantUser(tid) }
+  write() { isTenantOwner(tid) }
 }
 
 /*
-  Model: User Organization
-  Lists all organizations assigned to a user
-
-  Client-Side Permissions
-  - Read: If is owned by current user.
-  - Write: None
-
-  Server Functions
-    Created By
-      `/models/organization-users/{oid}/{uid}` from `onOrganizationUsersCreate`
-    Updated By
-      `/models/organizations/{oid}` from `onOrganizationUpdate`
+  Model: User Tenant
+  Lists all tenants assigned to a user
  */
-path /models/user-organizations/{uid} {
+path /user/{uid}/tenants {
   read() { isOwner(uid) }
 }
 
 /*
-  Model: Organization User
-  Lists all users assigned to an organization
-
-  Client-Side Permissions
-  - Read: If the current user is an org user.
-  - Write: If the current user is an org owner.
-
-  Server Functions
-    Created By
-      `/actions/create-organization/{uid}/{oid}` from `actionCreateOrganization`
-    Creates
-      `/models/organizations/{oid}` via `onOrganizationUsersCreate`
-    Updated By
-      `/models/users/{uid}` from `onUserUpdate`
+  Model: Tenant User
+  Lists all users assigned to a tenant
  */
-path /models/organization-users/{oid}/{uid} {
-  read() { isOrgUser(oid) }
-  write() { isOrgOwner(oid) }
+path /tenant/{tid}/users/{uid} {
+  read() { isTenantUser(tid) }
+  write() { isTenantOwner(tid) }
 }
 
 /*
   Action: Notify User Login
-
-  Client-Side Permissions
-  - Read: None.
-  - Write: If the current user is the verified owner.
-
-  Curretly not active.
  */
-path /actions/notify-login/{uid} {
-  write() { isVerifiedOwner(uid) }
-}
+// path /actions/notify-login/{uid} {
+//   write() { isVerifiedOwner(uid) }
+// }
 
 /*
-  Action: Create Organization
-
-  Client-Side Permissions
-  - Read: None.
-  - Write: If the current user is the verified owner.
-
-  Server Functions
-    Creates
-      `/models/organizations/{oid}` via `actionCreateOrganization`
-      `/models/organization-users/{oid}/{uid` via `actionCreateOrganization`
+  User Action: Create Tenant
  */
-path /actions/create-organization/{uid}/{oid} is NewOrganization {
+path /user/{uid}/actions/create-tenant/{tid} is NewTenant {
   write() { isVerifiedOwner(uid) }
 }
