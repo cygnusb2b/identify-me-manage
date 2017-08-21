@@ -11,12 +11,12 @@ export default Model.extend({
   name: attr('string'),
 
   save() {
-    const oid = this.get('id');
+    const tid = this.get('id');
     const uid = this.get('user.uid');
     return this._super(...arguments)
       .then(() => {
-        const path = `/models/user-organizations/${uid}/${oid}`;
-        return this.get('fb').waitUntilExists(path).then(() => oid);
+        const path = `/user/${uid}/tenants/${tid}`;
+        return this.get('fb').waitUntilExists(path).then(() => tid);
       })
       .finally(() => this.unloadRecord())
     ;

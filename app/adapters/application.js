@@ -1,5 +1,6 @@
 import FirebaseAdapter from 'emberfire/adapters/firebase';
 import Ember from 'ember';
+import { pluralize } from 'ember-inflector';
 
 const { inject: { service } } = Ember;
 
@@ -9,7 +10,7 @@ const { inject: { service } } = Ember;
  * @param {string} modelName
  */
 function isActionModel(modelName) {
-  return modelName.indexOf('actions') === 0;
+  return modelName.indexOf('/actions/') !== -1;
 }
 
 export default FirebaseAdapter.extend({
@@ -30,17 +31,17 @@ export default FirebaseAdapter.extend({
   },
 
   /**
-   * Overwritten to ensure `$uid` and `$oid` paths are replaced.
-   * Also ensures that models have the `models/` path pre-pended
-   * and that `actions` are left as-is.
+   * Overwritten to ensure `$uid` and `$tid` paths are replaced.
+   * Also ensures that models are pluralized and that `actions`
+   * are left as-is (as set on the filesystem).
    *
    * @param {string} modelName
    */
   pathForType(modelName) {
     const uid = this.get('user.uid');
-    const oid = this.get('user.oid');
-    const replaced = modelName.replace('$uid', uid).replace('$oid', oid);
-    const formatted = isActionModel(replaced) ? replaced : `models/${replaced}`;
+    const tid = this.get('user.tid');
+    const replaced = modelName.replace('$uid', uid).replace('$tid', tid);
+    const formatted = isActionModel(replaced) ? replaced : pluralize(replaced);
     return formatted;
   },
 });

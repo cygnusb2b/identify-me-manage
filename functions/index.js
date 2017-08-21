@@ -13,38 +13,38 @@ function getNowTimestamp() {
 }
 
 /**
- * Returns a Promise containing all organization IDs that are currently assigned
+ * Returns a Promise containing all tenant IDs that are currently assigned
  * to the requested user id.
  *
  * @param {string} uid The user id.
  * @return {Promise<String[]>}
  */
-function findAllOrgIdsForUser(uid) {
-  const oids = [];
+function findTenantIdsForUser(uid) {
+  const tids = [];
   return Promise.resolve()
-    .then(() => admin.database().ref(`/models/user-organizations/${uid}`).once('value'))
+    .then(() => admin.database().ref(`/user/${uid}/tenants`).once('value'))
     .then((snap) => {
       snap.forEach((child) => {
         // Must not return a truthy value from the `forEach`, otherwise further enumeration/looping will be canceled.
         // @see {@link https://firebase.google.com/docs/reference/functions/functions.database.DeltaSnapshot#forEach}
-        oids.push(child.key);
+        tids.push(child.key);
       });
-      return oids;
+      return tids;
     })
   ;
 }
 
 /**
  * Returns a Promise containing all users IDs that are currently assigned
- * to the requested organization id.
+ * to the requested tenant id.
  *
- * @param {string} oid The organization id.
+ * @param {string} tid The tenant id.
  * @return {Promise<String[]>}
  */
-function findAllUserIdsForOrg(oid) {
+function findAllUserIdsForTenant(tid) {
   const uids = [];
   return Promise.resolve()
-    .then(() => admin.database().ref(`/models/organization-users/${oid}`).once('value'))
+    .then(() => admin.database().ref(`/tenant/${tid}/users`).once('value'))
     .then((snap) => {
       snap.forEach((child) => {
         // Must not return a truthy value from the `forEach`, otherwise further enumeration/looping will be canceled.
@@ -76,7 +76,7 @@ exports.onAuthUserCreate = functions.auth.user().onCreate((event) => {
     // loginCount: 0,
   };
   return Promise.resolve()
-    .then(() => admin.database().ref(`/models/users/${data.uid}`).update(user))
+    .then(() => admin.database().ref(`/app/users/${data.uid}`).update(user))
   ;
 });
 
@@ -85,30 +85,30 @@ exports.onAuthUserCreate = functions.auth.user().onCreate((event) => {
  */
 exports.onAuthUserDelete = functions.auth.user().onDelete((event) => {
   const uid = event.data.uid;
-  return admin.database().ref(`/models/users/${uid}`).remove();
+  return admin.database().ref(`/app/users/${uid}`).remove();
 });
 
 /**
- * Action: Create New Organization
+ * Action: User, Create New Tenant
  */
-exports.actionCreateOrganization = functions.database.ref('/actions/create-organization/{uid}/{oid}').onCreate((event) => {
+exports.userActionCreateTenant = functions.database.ref('/user/{uid}/actions/create-tenant/{tid}').onCreate((event) => {
   const now = getNowTimestamp();
   const uid = event.params.uid;
-  const oid = event.params.oid;
+  const tid = event.params.tid;
 
   const payload = event.data.val();
-  const org = {
+  const tenant = {
     name: payload.name,
-    photoURL: `https://robohash.org/${oid}?set=set3&bgset=bg2`,
+    photoURL: `https://robohash.org/${tid}?set=set3&bgset=bg2`,
     createdAt: now,
     updatedAt: now,
   };
   return Promise.resolve()
-    .then(() => admin.database().ref(`/models/organizations/${oid}`).set(org)) // Create the org.
-    .then(() => admin.database().ref(`/models/users/${uid}`).once('value')) // Retrieve the current user.
+    .then(() => admin.database().ref(`/app/tenants/${tid}`).set(tenant)) // Create the tenant.
+    .then(() => admin.database().ref(`/app/users/${uid}`).once('value')) // Retrieve the current user.
     .then((snap) => {
       const user = snap.val();
-      const path = `/models/organization-users/${oid}/${uid}`;
+      const path = `/tenant/${tid}/users/${uid}`;
       // Set the current user (who executed the creation) as the owner of the organization.
       return admin.database().ref(path).set({
         email: user.email || null,
@@ -124,23 +124,23 @@ exports.actionCreateOrganization = functions.database.ref('/actions/create-organ
 });
 
 /**
- * Listener: On Organization User Create
+ * Listener: On Tenant User Create
  */
-exports.onOrganizationUsersCreate = functions.database.ref('/models/organization-users/{oid}/{uid}').onCreate((event) => {
+exports.onTenantUserCreate = functions.database.ref('/tenant/{tid}/users/{uid}').onCreate((event) => {
   const uid = event.params.uid;
-  const oid = event.params.oid;
+  const tid = event.params.tid;
 
   const user = event.data.val();
 
   return Promise.resolve()
-    .then(() => admin.database().ref(`/models/organizations/${oid}`).once('value')) // Retrieve the org.
+    .then(() => admin.database().ref(`/app/tenants/${tid}`).once('value')) // Retrieve the tenant.
     .then((snap) => {
-      const org = snap.val();
-      const path = `/models/user-organizations/${uid}/${oid}`;
-      // Now that the user is a member of the org, set the organization to the user's list of orgs.
+      const tenant = snap.val();
+      const path = `/user/${uid}/tenants/${tid}`;
+      // Now that the user is a member of the tenant, set the tenant to the user's list of tenants.
       return admin.database().ref(path).set({
-        name: org.name,
-        photoURL: org.photoURL,
+        name: tenant.name,
+        photoURL: tenant.photoURL,
         role: user.role || 'Restricted',
       });
     });
@@ -148,23 +148,21 @@ exports.onOrganizationUsersCreate = functions.database.ref('/models/organization
 });
 
 /**
- * Listener: On Organization Update
+ * Listener: On App Tenant Update
  */
-exports.onOrganizationUpdate = functions.database.ref(`/models/organizations/{oid}`).onUpdate((event) => {
-  const oid = event.params.oid;
+exports.onAppTenantUpdate = functions.database.ref(`/app/tenants/{tid}`).onUpdate((event) => {
+  const tid = event.params.tid;
   const payload = event.data.val();
 
-  // @todo Update updatedAt. Be careful not to cause an infinite loop!
-
   return Promise.resolve()
-    .then(() => findAllUserIdsForOrg(oid))
+    .then(() => findAllUserIdsForTenant(tid))
     .then((uids) => {
       const refs = {};
       uids.forEach((uid) => {
         ['name', 'photoURL'].forEach(key => {
           // Only send the update if the data has actually changed.
           if (event.data.child(key).changed()) {
-            const path = `/models/user-organizations/${uid}/${oid}/${key}`;
+            const path = `/user/${uid}/tenants/${tid}/${key}`;
             refs[path] = payload[key];
           }
         });
@@ -177,24 +175,22 @@ exports.onOrganizationUpdate = functions.database.ref(`/models/organizations/{oi
 });
 
 /**
- * Listener: On User Update
+ * Listener: On App User Update
  */
-exports.onUserUpdate = functions.database.ref(`/models/users/{uid}`).onUpdate((event) => {
+exports.onAppUserUpdate = functions.database.ref(`/app/users/{uid}`).onUpdate((event) => {
   const uid = event.params.uid;
   const payload = event.data.val();
 
-  // @todo Update updatedAt. Be careful not to cause an infinite loop!
-
   return Promise.resolve()
-    // Find all organizations currently assigned to this user
-    .then(() => findAllOrgIdsForUser(uid))
-    .then((oids) => {
+    // Find all tenants currently assigned to this user
+    .then(() => findTenantIdsForUser(uid))
+    .then((tids) => {
       const refs = {};
-      oids.forEach((oid) => {
+      tids.forEach((tid) => {
         ['firstName', 'lastName', 'photoURL', 'email'].forEach(key => {
           // Only send the update if the data has actually changed.
           if (event.data.child(key).changed()) {
-            const path = `/models/organization-users/${oid}/${uid}/${key}`;
+            const path = `/tenant/${tid}/users/${uid}/${key}`;
             refs[path] = payload[key];
           }
         });

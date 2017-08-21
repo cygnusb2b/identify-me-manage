@@ -10,7 +10,7 @@ export default Component.extend({
 
   init() {
     this._super(...arguments);
-    this.set('organization', this.get('store').createRecord('actions/create-organization/$uid'));
+    this.set('organization', this.get('store').createRecord('user/$uid/actions/create-tenant'));
   },
 
   actions: {
