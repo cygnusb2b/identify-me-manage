@@ -8,7 +8,8 @@ export default Route.extend({
   },
 
   afterModel(resolved) {
-    if (resolved && (resolved.get('id') !== this.get('user.oid'))) {
+    if (resolved && (resolved.get('id') !== this.get('user.tid'))) {
+      // @todo This should change to passing the entire model, once the user's active org is a relationship.
       return this.get('user').setActiveOrgTo(resolved.get('id'));
     }
   },

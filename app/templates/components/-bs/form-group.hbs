@@ -10,10 +10,11 @@
     disabled=disabled
     autofocus=autofocus
     aria-describedby=helpIdentifier
+    focus-out=focus-out
   }}
 {{/if}}
 {{#if (eq control 'textarea')}}
-  {{textarea id=identifier class="form-control" value=value disabled=disabled aria-describedby=helpIdentifier}}
+  {{textarea id=identifier class="form-control" value=value disabled=disabled aria-describedby=helpIdentifier focus-out=focus-out}}
 {{/if}}
 {{#if helpText}}
   <small id="{{ helpIdentifier }}" class="form-text text-muted">{{ helpText }}</small>

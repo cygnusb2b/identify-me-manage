@@ -1,11 +1,11 @@
 <label>Options</label>
 <div class="custom-controls-stacked">
   {{#each togglable as |attrObj|}}
-    {{#if (get control.supports attrObj.name)}}
+    {{#if (get control.supports attrObj.id)}}
       <label class="custom-control custom-checkbox">
         {{input type="checkbox"
-          change=(action "toggleField" attrObj.name)
-          checked=(readonly (get attributes attrObj.name))
+          change=(action "toggleField" attrObj.id)
+          checked=(readonly (get attributes attrObj.id))
           disabled=attrObj.disabled
           class="custom-control-input"
         }}

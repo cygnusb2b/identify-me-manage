@@ -61,10 +61,6 @@ export default Service.extend({
     return this.get('firebaseApp');
   },
 
-  foo() {
-    return this.get('database');
-  },
-
   getTimestamp() {
     return firebase.database.ServerValue.TIMESTAMP;
   },

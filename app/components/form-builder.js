@@ -1,38 +1,105 @@
 import Ember from 'ember';
 
-const { Component, computed, inject: { service } } = Ember;
+const { Component, computed, inject: { service }, get } = Ember;
+
+function compare(a, b) {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
+function nativeSort(toSort, keys) {
+  return toSort.toArray().sort((a, b) => {
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      let propA = get(a, key), propB = get(b, key);
+      let value = compare(propA, propB);
+      if (value) return value;
+    }
+    return 0;
+  });
+}
 
 export default Component.extend({
+  store: service(),
   fieldManager: service(),
 
-  fields: [],
+  form: null,
+  selectedField: null,
 
-  selected: null,
-
-  fieldTypeSort: ['sequence'],
-  fieldTypes: computed.sort('fieldManager.fieldTypes', 'fieldTypeSort'),
-
-  hasSelectedField: computed('selected', function() {
-    return this.get('selected') ? true : false;
+  fields: computed('form.fields.[]', function() {
+    return this.get('form.fields');
   }),
 
-  init() {
-    this._super(...arguments);
-    this.get('fields').clear();
-  },
+  /**
+   * Returns the active fields sorted by sequence, then id.
+   * Note: Must use the native array `sort` (instead of Ember's) due to
+   * Ember following different search order rules.
+   */
+  fieldsSorted: computed('fields.[]', 'fields.@each.sequence', function() {
+    return nativeSort(this.get('fields'), ['sequence', 'id']);
+  }),
+
+  nextSequence: computed('fieldsSorted.lastObject.sequence', function() {
+    const sequence = this.get('fieldsSorted.lastObject.sequence');
+    return typeof sequence === 'undefined' ? 0 : sequence + 1;
+  }),
+
+   /**
+   * Returns the field types sorted by sequence, then id.
+   * Note: Must use the native array `sort` (instead of Ember's) due to
+   * Ember following different search order rules.
+   */
+  fieldTypes: computed('fieldManager.fieldTypes.[]', 'fieldManager.fieldTypes.@each.sequence', function() {
+    return nativeSort(this.get('fieldManager.fieldTypes'), ['sequence', 'id']);
+  }),
+
+  currentOwnerFieldIds: computed('fields.[]', function() {
+    return this.get('fields').map(field => get(field, 'id'));
+  }),
+
+  fieldsGlobal: computed('fieldManager.fieldsGlobal.[]', 'currentOwnerFieldIds', function() {
+    const ids = this.get('currentOwnerFieldIds');
+    return this.get('fieldManager.fieldsGlobal').reject(global => ids.includes(get(global, 'id')));
+  }),
+
+  hasSelectedField: computed('selectedField', function() {
+    return this.get('selectedField') ? true : false;
+  }),
 
   moveField(from, to) {
-    const fields = this.get('fields');
+    const fields = this.get('fieldsSorted');
     const sorted = fields.slice();
     sorted.splice(to, 0, sorted.splice(from, 1)[0]);
-    fields.setObjects(sorted);
+    this.send('reorderFields', sorted);
   },
 
   actions: {
-    addField(key) {
-      const field = this.get('fieldManager').createFieldFor(key, true);
-      this.get('fields').pushObject(field);
-      this.set('selected', field);
+    createField(type, autosave = true) {
+      this.get('form').createField(type, this.get('nextSequence'), autosave)
+        .then(field => this.send('selectField', field))
+      ;
+    },
+    assignField(scope, field, autosave = true) {
+      this.get('form').assignField(scope, field, this.get('nextSequence'), autosave)
+        .then(field => this.send('selectField', field))
+      ;
+    },
+    applyFieldValues() {
+      const field = this.get('selectedField');
+      // @todo Need error handling here.
+      // @todo This will not update the updated date of the form
+      // @todo Does the field editor actually need to do this??!?! So we can autosave as field props change?
+      field.save().then(() => this.send('selectField', null));
+    },
+    removeField(field) {
+      this.get('form').destroyField(field);
+    },
+    save() {
+      this.get('form').save();
+    },
+    selectField(field) {
+      this.set('selectedField', field);
     },
     moveField(index, direction) {
       if (direction === 'up') {
@@ -47,14 +114,9 @@ export default Component.extend({
         this.moveField(index, index + 1)
       }
     },
-    removeField(field) {
-      this.get('fields').removeObject(field);
-    },
     reorderFields(ordered) {
-      this.set('fields', ordered);
-    },
-    selectField(field) {
-      this.set('selected', field);
+      ordered.forEach((field, index) => field.set('sequence', index));
+      this.get('form').save();
     },
   }
 });

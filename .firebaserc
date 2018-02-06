@@ -1,6 +1,7 @@
 {
   "projects": {
     "default": "identify-me-development",
-    "production": "identify-me-production"
+    "production": "identify-me-production",
+    "local-dev": "identify-me-development-bare"
   }
 }

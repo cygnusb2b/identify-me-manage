@@ -1,12 +1,16 @@
 {{yield (hash
+  fieldsGlobal=fieldsGlobal
   fieldTypes=fieldTypes
-  fields=fields
-  selected=selected
+  fieldsSorted=fieldsSorted
+  selectedField=selectedField
   hasSelectedField=hasSelectedField
-  addField=(action "addField")
+  save=(action "save")
+  createField=(action "createField")
+  assignField=(action "assignField")
+  selectField=(action "selectField")
+  applyFieldValues=(action "applyFieldValues")
   moveField=(action "moveField")
   removeField=(action "removeField")
-  selectField=(action "selectField")
   reorderFields=(action "reorderFields")
 )
 }}

@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-const { Component, computed, assign } = Ember;
+const { Component, computed, set, get } = Ember;
 
 export default Component.extend({
   /**
@@ -33,14 +33,13 @@ export default Component.extend({
    * Returns an array of control attributes that are deemed as `togglable: true`.
    * Will also disable certain attributes if the `required` attribute is set to `false`.
    */
-  togglable: computed('control.attributes', 'attributes.required', function() {
-    const togglable = this.get('control.attributes')
-      .filter(attr => attr.togglable === true)
-    ;
-    if (this.get('attributes.required')) {
-      const shouldDisable = this.get('shouldDisableWhenRequired');
-      return togglable.map(attr => shouldDisable.includes(attr.name) ? assign({}, attr, { disabled: true }) : attr);
-    }
+  togglable: computed('control.attributes.@each.togglable', 'attributes.required', function() {
+    const togglable = this.get('control.attributes').filter(attr => attr.get('togglable'));
+    const shouldDisable = this.get('shouldDisableWhenRequired');
+    togglable.forEach((attr) => {
+      const disabled = this.get('attributes.required') && shouldDisable.includes(attr.get('id'));
+      attr.set('disabled', disabled);
+    });
     return togglable;
   }),
 
@@ -52,13 +51,15 @@ export default Component.extend({
      * @param {string} name The attribute name
      */
     toggleField(name) {
-      const fieldName = `attributes.${name}`;
-      this.set(fieldName, Boolean(!this.get(fieldName)));
+      const attributes = this.get('attributes');
+      const current = get(attributes, name);
+      set(attributes, name, Boolean(!current))
 
-      if (name === 'required' && this.get(fieldName)) {
+      if (name === 'required' && get(attributes, name)) {
         const shouldDisable = this.get('shouldDisableWhenRequired');
-        shouldDisable.forEach(toUnset => this.set(`attributes.${toUnset}`, false));
+        shouldDisable.forEach(toUnset => set(attributes, toUnset, false));
       }
+      this.sendAction('on-change');
     },
   },
 });

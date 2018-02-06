@@ -1,0 +1,48 @@
+<table class="table">
+  {{#sortable-group tagName="tbody" onChange="reorder" as |group|}}
+    {{#each sortedChoices as |choice|}}
+      {{#sortable-item tagName="tr" model=choice group=group handle=".sort-handle"}}
+
+        <td>
+          <div class="form-group mb-0">
+            <div class="input-group input-group-sm">
+              <span class="input-group-addon"><small>Label</small></span>
+              {{input class="form-control form-control-sm field-choice-label"
+                value=choice.label
+                focus-out=(action "saveIfChanged" choice "label")
+                readonly=choice.isHidden
+                placeholder="The label seen by the user."
+                disabled=choicesDisabled
+              }}
+
+              <span class="input-group-btn">
+                {{#-bs/button "primary" size="small" outline=true class="sort-handle" title="Move the choice up or down."}}{{-ion "arrow-move"}}{{/-bs/button}}
+              </span>
+              <span class="input-group-btn">
+                {{#-bs/button "secondary" class="dropdown-toggle" title="Perform additional actions or adjust the choice's settings." outline=true toggle="dropdown" size="small"}}
+                  {{-ion "ios-gear"}}
+                {{/-bs/button}}
+                <div class="dropdown-menu dropdown-menu-right">
+                  {{#if choice.isHidden}}
+                    <button class="dropdown-item" type="button" {{action "hide" choice false}}>{{-ion "eye"}} Show</button>
+                  {{else}}
+                    <button class="dropdown-item" type="button" {{action "hide" choice true}}>{{-ion "eye-disabled"}} Hide</button>
+                  {{/if}}
+
+                  {{!-- <button class="dropdown-item" type="button" {{action "toggle" choice "showCustomValue"}}>{{-ion "android-checkbox-outline"}} Value {{#if choice.showCustomValue}}Off{{else}}On{{/if}}</button> --}}
+                  {{#unless choicesDisabled}}
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" {{action "remove" choice}}><span class="text-danger">{{-ion "close-round"}}</span> Delete</button>
+                  {{/unless}}
+                </div>
+              </span>
+            </div>
+          </div>
+        </td>
+      {{/sortable-item}}
+    {{/each}}
+  {{/sortable-group}}
+</table>
+{{#unless choicesDisabled}}
+  {{#-bs/button "success" outline=true size="small" click=(action "add") title="Add a new choice."}}{{-ion "plus-round"}} Add{{/-bs/button}}
+{{/unless}}

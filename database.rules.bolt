@@ -13,8 +13,6 @@ type User {
   // loginCount: InitialNumber,
 }
 
-
-
 type NewTenant {
   name: NonEmptyString,
 }
@@ -26,7 +24,190 @@ type Tenant {
   updatedAt: CurrentTimestamp,
 }
 
+
+type FieldControlAttribute {
+  label: String,
+  togglable: Boolean,
+}
+type FieldControlAttributeId extends String {
+  validate() {
+    this == prior(root['app']['field-control-attributes'])[this] != null
+  }
+}
+path /app/field-control-attributes is FieldControlAttribute[] {
+  read() { isPublic() }
+}
+
+
+type FieldControl {
+  title: String,
+  attributes: Map<FieldControlAttributeId, Boolean>
+}
+type FieldControlId extends String {
+  validate() {
+    this == prior(root['app']['field-controls'])[this] != null
+  }
+}
+path /app/field-controls is FieldControl[] {
+  read() { isPublic() }
+}
+
+type FieldTypeId extends String {
+  validate() {
+    this == prior(root['app']['field-types'])[this] != null
+  }
+}
+type FieldType {
+  validate() {
+    this.child('controls').child(this.child('defaultControl').val()).val() != null
+  }
+  title: String,
+  description: String,
+  sequence: Number,
+  controls:  Map<FieldControlId, Boolean>,
+  defaultControl: FieldControlId,
+}
+path /app/field-types is FieldType[] {
+  read() { isPublic() }
+}
+
+/**
+ * Determines if the provided field type key supports choices.
+ */
+fieldSupportsChoices(type) {
+  type == 'choice-single' || type == 'choice-multiple';
+}
+
+/**
+ * Determines if a field exists for the provided scope and id.
+ */
+fieldExistsFor(scope, key) {
+  scope == 'app' ? prior(root['app']['fields'])[key] != null :
+    scope == 'tenant' ? prior(root['tenant'][$tid]['fields'])[key] != null : true
+}
+
+/**
+ * Determines if a field choice exists for the provided field scope and choice id.
+ * Relies on the middle-man tenant form field key of $fieldId.
+ */
+choiceExistsFor(scope, choiceId) {
+  scope == 'app' ? prior(root['app']['fields'])[$fieldId]['choices'][choiceId] != null :
+    scope == 'tenant' ? prior(root['tenant'][$tid]['fields'])[$fieldId]['choices'][choiceId] != null : true
+}
+
+type FieldTarget extends String {
+  validate() { this == 'identity' || this == 'other' }
+}
+
+type AbstractField {
+  validate() {
+    // Ensure that only `choice-single` and `choice-multiple` fields allow choices.
+    fieldSupportsChoices(this.child('type').val()) != true
+      ? this.child('choices').val() == null
+      : true
+  }
+  control: FieldControlId, // Must match an existing field-control key
+  type: FieldTypeId,  // Must match an existing field-type key
+  label: String,
+  target: FieldTarget, // Must match the appropriate field target, e.g. `identity`
+  helpText: String | Null,
+  attributes: Map<String, Any> | Null, // @todo Can probably validate control attrs by control type.
+}
+
+type Field extends AbstractField {
+  choices: FieldChoice[] | Null,
+}
+
+type FieldChoice {
+  label: String,
+  value: String,
+  sequence: Number,
+  isHidden: Boolean,
+  isOther: Boolean,
+  isNone: Boolean,
+}
+
+getChoiceScope() {
+  prior(root['tenant'][$tid]['forms'][$formId]['fields'][$fieldId]['scope'])
+}
+
+type FormFieldChoice {
+  validate() {
+    choiceExistsFor(getChoiceScope(this), key())
+  }
+  label: InitialChoiceString,
+  value: InitialChoiceString,
+  sequence: Number,
+  isHidden: Boolean,
+  isOther: InitialChoiceBoolean,
+  isNone: InitialChoiceBoolean,
+}
+
+type InitialChoiceString extends String {
+  validate() { getChoiceScope(this) == 'form' ? true : initial(this, this) }
+}
+type InitialChoiceNull extends Null {
+  validate() { getChoiceScope(this) == 'form' ? true : initial(this, this) }
+}
+type InitialChoiceBoolean extends Boolean {
+  validate() { getChoiceScope(this) == 'form' ? true : initial(this, this) }
+}
+
+/**
+ * Global fields.
+ */
+path /app/fields is Field[] {
+  read() { isPublic() }
+}
+
+/**
+ * Tenant owned fields.
+ */
+path /tenant/{tid}/fields is Field[] {
+  write() { isTenantWriter(tid) }
+  read() { isTenantUser(tid) }
+}
+
+type TenantForm {
+  name: String,
+  createdBy: InitialUID,
+  updatedBy: CurrentUID,
+  createdAt: InitialTimestamp,
+  updatedAt: CurrentTimestamp,
+}
+path /tenant/{tid}/forms/{formId} is TenantForm {
+  write() { isTenantWriter(tid) }
+  read() { isPublic() }
+}
+
+type FormField extends AbstractField {
+  validate() {
+    fieldExistsFor(this.child('scope').val(), key())
+  }
+  scope: FieldScope, // Must match a valid field scope, e.g. `app` or `tenant`
+  sequence: Number,
+  choices: FormFieldChoice[],
+}
+path /tenant/{tid}/forms/{formId}/fields {
+  read() { isTenantUser(tid) }
+}
+path /tenant/{tid}/forms/{formId}/fields/{fieldId} is FormField {
+
+}
+
+type FieldScope extends String {
+  validate() { this == 'app' || this == 'tenant' || this == 'form' }
+}
+
+type InitialNull extends Null {
+  validate() { initial(this, this) }
+}
+
 type InitialString extends String {
+  validate() { initial(this, this) }
+}
+
+type InitialBoolean extends Boolean {
   validate() { initial(this, this) }
 }
 
@@ -46,6 +227,14 @@ type InitialNumber extends Number {
   validate() { initial(this, 0) }
 }
 
+type InitialUID extends String {
+  validate() { initial(this, auth.uid) }
+}
+
+type CurrentUID extends String {
+  validate() { this == auth.uid }
+}
+
 type CurrentTimestamp extends Number {
   validate() { this == now }
 }
@@ -53,6 +242,12 @@ type CurrentTimestamp extends Number {
 type InitialTimestamp extends Number {
   validate() { initial(this, now) }
 }
+
+/**
+ * Determines if the resource is available publically.
+ * @todo This should require some limited public apikey auth...
+ */
+isPublic() { true }
 
 /**
  * Determines if the current user owns the applicable resource.
@@ -95,6 +290,11 @@ isTenantMember(tid) { hasTenantRole(tid, "Member") }
  */
 isTenantOwner(tid) { hasTenantRole(tid, "Owner") }
 
+/**
+ * Determines if the current user can write for the current tenant.
+ */
+isTenantWriter(tid) { isTenantMember(tid) || isTenantOwner(tid) }
+
 /*
   Model: User
   The primary user object.
@@ -126,7 +326,7 @@ path /user/{uid}/tenants {
  */
 path /tenant/{tid}/users/{uid} {
   read() { isTenantUser(tid) }
-  write() { isTenantOwner(tid) }
+  // write() { isTenantOwner(tid) } // @todo Can this actually be written to? If it can, a type should be defined to prevent certain actions.
 }
 
 /*

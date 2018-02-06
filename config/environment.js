@@ -35,6 +35,15 @@ module.exports = function(environment) {
   };
 
   if (environment === 'development') {
+    ENV.firebase = {
+      apiKey: "AIzaSyBAlgGhaVb7WfIgbxAKf5Yn45GqW6pBkPk",
+      authDomain: "identify-me-development-bare.firebaseapp.com",
+      databaseURL: "https://identify-me-development-bare.firebaseio.com",
+      projectId: "identify-me-development-bare",
+      storageBucket: "identify-me-development-bare.appspot.com",
+      messagingSenderId: "58933591775"
+    };
+
     // ENV.APP.LOG_RESOLVER = true;
     // ENV.APP.LOG_ACTIVE_GENERATION = true;
     ENV.APP.LOG_TRANSITIONS = true;

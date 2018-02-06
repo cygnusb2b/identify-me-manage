@@ -20,6 +20,9 @@ a[data-ember-action]:not(:disabled),
 .clickable {
     cursor: pointer;
 }
+.form-control.field-choice-label[readonly] {
+    text-decoration: line-through;
+}
 
 .field-editor.close {
     position: absolute;

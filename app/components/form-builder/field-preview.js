@@ -10,7 +10,7 @@ export default Component.extend({
   field: {},
   attributes: {},
 
-  previewComponent: computed('field.control.key', function() {
-    return `form-builder/field-preview/${this.get('field.control.key')}`;
+  previewComponent: computed('field.control.id', function() {
+    return `form-builder/field-preview/${this.get('field.control.id')}`;
   }),
 });

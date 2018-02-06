@@ -18,6 +18,8 @@ Router.map(function() {
       this.route('team');
       this.route('forms', function() {
         this.route('create');
+        this.route('edit', { path: '/edit/:form_id' });
+        this.route('view');
       });
       this.route('fields', function() {
         this.route('create');

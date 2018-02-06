@@ -2,7 +2,7 @@
   <li class="nav-item">
     <a class="nav-link active" data-toggle="tab" href="#field-general" role="tab">General</a>
   </li>
-  {{#if control.supports.options}}
+  {{#if field.supportsChoices}}
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#field-choices" role="tab">Choices</a>
     </li>
@@ -13,26 +13,29 @@
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#field-preview" role="tab">Preview</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link disabled">
+      {{#if isSaving}}
+        <small class="text-info">Saving...</small>
+      {{else if error}}
+        <small class="text-danger">Error</small>
+      {{else if hasSaved}}
+        <small class="text-success">Saved</small>
+      {{/if}}
+    </a>
+  </li>
 </ul>
 <hr>
 <div class="tab-content">
   <div class="tab-pane active" id="field-general" role="tabpanel">
     {{#-bs/row}}
-      {{#-bs/col lg=6}}
-        {{-bs/form-group
-          identifier="fieldBuilder.name"
-          label="Name"
-          value=field.name
-          disabled=(eq field.reusable false)
-          helpText="A short name describing this field. Is only used internally and will not appear on any forms."
-        }}
-      {{/-bs/col}}
-      {{#-bs/col lg=6}}
+      {{#-bs/col}}
         {{-bs/form-group
           identifier="fieldBuilder.label"
           label="Label"
           value=field.label
           helpText="A user-friendly label for this field. The label will appear on the form above the field."
+          focus-out=(action "triggerSaveFor" "label")
         }}
       {{/-bs/col}}
     {{/-bs/row}}
@@ -44,6 +47,7 @@
           label="Helper Text"
           value=field.helpText
           helpText="Short text that describes the field, or provides instructions to the user."
+          focus-out=(action "triggerSaveFor" "helpText")
         }}
 
         {{#if hasMultipleControls}}
@@ -55,12 +59,12 @@
                   {{-bs/forms/radio
                     name="field-control-type"
                     class="custom-control-input"
-                    value=(readonly availableControl.key)
-                    checked=(readonly control.key)
-                    on-change=(action "switchControl")
+                    value=(readonly availableControl.id)
+                    checked=(readonly control.id)
+                    on-change=(action "switchControl" availableControl)
                   }}
                   <span class="custom-control-indicator"></span>
-                  <span class="custom-control-description">{{ availableControl.name }}</span>
+                  <span class="custom-control-description">{{ availableControl.title }}</span>
                 </label>
               {{/each}}
             </div>
@@ -71,9 +75,15 @@
       {{/-bs/col}}
     {{/-bs/row}}
   </div>
-  {{#if control.supports.options}}
+  {{#if field.supportsChoices}}
     <div class="tab-pane" id="field-choices" role="tabpanel">
-      {{form-builder/options-editor options=field.attributes.options}}
+      {{form-builder/choices-editor
+        field=field
+        on-save-start=(action "setIsSaving" true)
+        on-save-end=(action "setIsSaving" false)
+        on-save-success=(action "setHasSaved" true)
+        on-save-error=(action "setSavingError")
+      }}
     </div>
   {{/if}}
   <div class="tab-pane" id="field-attributes" role="tabpanel">
@@ -85,9 +95,14 @@
             label="Placeholder"
             value=field.attributes.placeholder
             helpText="A hint to the user of what can be entered in the field."
+            focus-out=(action "autosave")
           }}
         {{/if}}
-        {{form-builder/field-editor/togglable-attributes control=control attributes=field.attributes}}
+        {{form-builder/field-editor/togglable-attributes
+          control=control
+          attributes=field.attributes
+          on-change=(action "autosave")
+        }}
       {{/-bs/col}}
     {{/-bs/row}}
   </div>

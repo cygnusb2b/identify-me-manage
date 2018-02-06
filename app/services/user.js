@@ -45,6 +45,20 @@ export default Service.extend({
   tid: computed.reads('activeOrganization.id'),
 
   /**
+   * Gets the corresponding `/tenant/$tid/user` model for the active `/app/user`.
+   *
+   * @type {Promise<(Model|void)>}
+   */
+  tenantUser: computed('uid', 'tid', function() {
+    const uid = this.get('uid');
+    const tid = this.get('tid');
+    if (uid && tid) {
+      return this.get('store').findRecord('tenant/$tid/user', uid);
+    }
+    return Promise.resolve();
+  }),
+
+  /**
    * The Firebase Auth object, or `null` if not authenticated.
    *
    * @type {?object}
@@ -283,6 +297,7 @@ export default Service.extend({
     return Promise.resolve()
       .then(() => this.retrieveUserOrgs())
       .then(orgs => this.set('organizations', orgs))
+      .then(() => this.get('tenantUser'))
     ;
   },
 
@@ -314,7 +329,9 @@ export default Service.extend({
     return RSVP.hash({
       model: this.retrieveUserModel(uid),
       organizations: this.retrieveUserOrgs(),
-    }).then(this.setProperties.bind(this));
+    })
+    .then(this.setProperties.bind(this))
+    .then(() => this.get('tenantUser'));
   },
 
   /**
